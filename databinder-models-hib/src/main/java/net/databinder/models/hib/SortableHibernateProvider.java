@@ -1,5 +1,8 @@
 package net.databinder.models.hib;
 
+import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortState;
+import org.apache.wicket.extensions.markup.html.repeater.data.sort.ISortStateLocator;
+
 /*
  * Databinder: a simple bridge from Wicket to Hibernate
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
@@ -18,9 +21,7 @@ package net.databinder.models.hib;
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
-import org.apache.wicket.extensions.markup.html.repeater.data.table.*;
-import org.apache.wicket.extensions.markup.html.repeater.data.sort.*;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.ISortableDataProvider;
 
 /**
  * <h1>SortableHibernateProvider</h1>
@@ -31,7 +32,7 @@ import org.apache.wicket.extensions.markup.html.repeater.data.sort.*;
  * @author Mark Southern (southern at scripps dot edu)
  */
 
-public class SortableHibernateProvider<T> extends HibernateProvider<T> implements ISortableDataProvider<T> {
+public class SortableHibernateProvider<T, S> extends HibernateProvider<T> implements ISortableDataProvider<T, S > {
 
     private ISortStateLocator sortStateLocator = null;
 
@@ -53,12 +54,12 @@ public class SortableHibernateProvider<T> extends HibernateProvider<T> implement
         return (sortStateLocator != null) ? sortStateLocator.getSortState() : sortState;
     }
 
-    public void setSortState(ISortState state) {
-        if (sortStateLocator != null) {
-            sortStateLocator.setSortState(state);
-        }
-        else {
-            this.sortState = state;
-        }
-    }
+//    public void setSortState(ISortState state) {
+//        if (sortStateLocator != null) {
+//            sortStateLocator.setSortState(state);
+//        }
+//        else {
+//            this.sortState = state;
+//        }
+//    }
 }

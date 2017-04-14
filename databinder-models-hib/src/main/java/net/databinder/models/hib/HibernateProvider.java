@@ -20,13 +20,13 @@ package net.databinder.models.hib;
 
 import java.util.Iterator;
 
-import net.databinder.hib.Databinder;
-import net.databinder.models.PropertyDataProvider;
-
 import org.apache.wicket.model.IModel;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
+
+import net.databinder.hib.Databinder;
+import net.databinder.models.PropertyDataProvider;
 
 /**
  * Provides query results to DataView and related components. Like the Hibernate model classes,
@@ -185,7 +185,7 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 	 * Only override this method if a single count query or 
 	 * criteria projection is not possible.
 	 */
-	public int size() {
+	public long size() {
 		Session sess =  Databinder.getHibernateSession(factoryKey);
 
 		if(countQueryBuilder != null) {
@@ -211,5 +211,11 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 	
 	/** does nothing */
 	public void detach() {
+	}
+
+	@Override
+	public Iterator<? extends T> iterator(long first, long count) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

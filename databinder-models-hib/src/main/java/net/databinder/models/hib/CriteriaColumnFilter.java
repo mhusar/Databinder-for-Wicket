@@ -1,5 +1,7 @@
 package net.databinder.models.hib;
 
+import org.apache.wicket.core.util.lang.PropertyResolver;
+
 /*
  * Databinder: a simple bridge from Wicket to Hibernate
  * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
@@ -22,7 +24,6 @@ package net.databinder.models.hib;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.IFilterStateLocator;
-import org.apache.wicket.util.lang.PropertyResolver;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;

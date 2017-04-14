@@ -79,7 +79,7 @@ public class CriteriaSorter implements ISortStateLocator, CriteriaBuilder, Seria
         SortParam sort = sortState.getSort();
         String property;
         if (sort != null && sort.getProperty() != null) {
-            property = sort.getProperty();
+            property = (String) sort.getProperty();
             asc = sort.isAscending();
         }
         else {

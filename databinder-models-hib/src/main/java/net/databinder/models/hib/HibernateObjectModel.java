@@ -25,15 +25,15 @@ import java.lang.reflect.Method;
 
 import javax.persistence.Version;
 
-import net.databinder.hib.Databinder;
-import net.databinder.models.BindingModel;
-import net.databinder.models.LoadableWritableModel;
-
 import org.apache.wicket.WicketRuntimeException;
 import org.hibernate.Criteria;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.proxy.HibernateProxyHelper;
+
+import net.databinder.hib.Databinder;
+import net.databinder.models.BindingModel;
+import net.databinder.models.LoadableWritableModel;
 
 /**
  * Model loaded and persisted by Hibernate. This central Databinder class can be initialized with an

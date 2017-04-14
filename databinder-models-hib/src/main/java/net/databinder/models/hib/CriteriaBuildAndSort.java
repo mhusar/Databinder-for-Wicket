@@ -48,7 +48,7 @@ public abstract class CriteriaBuildAndSort extends BaseCriteriaBuildAndSort impl
 		SortParam sort = sortState.getSort();
 		String property;
 		if (sort != null && sort.getProperty() != null) {
-			property = sort.getProperty();
+			property = (String) sort.getProperty();
 			sortAscending = sort.isAscending();
 		}
 		else {
