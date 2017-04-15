@@ -8,17 +8,17 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 
-import net.databinder.components.tree.data.DataTreeObject;
-import net.databinder.models.hib.CriteriaBuilder;
-import net.databinder.models.hib.HibernateListModel;
-import net.databinder.models.hib.HibernateObjectModel;
-
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.markup.html.tree.BaseTree;
+import org.apache.wicket.extensions.markup.html.tree.BaseTree;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Property;
+
+import net.databinder.components.tree.data.DataTreeObject;
+import net.databinder.models.hib.CriteriaBuilder;
+import net.databinder.models.hib.HibernateListModel;
+import net.databinder.models.hib.HibernateObjectModel;
 
 
 /**
@@ -29,7 +29,10 @@ import org.hibernate.criterion.Property;
  * @author Thomas Kappler
  * 
  * @param <T> the IDataTreeNode implementation being represented by the tree nodes
+ * @deprecated TODO [migration]: make subclass of new (1.6) wicket tree
  */
+// TODO [migration]: make subclass of new (1.6) wicket tree
+@Deprecated
 public abstract class DataTree<T extends DataTreeObject<T>> extends BaseTree {
 	/**
 	 * Construct a tree with a root entity.

@@ -1,10 +1,10 @@
 package net.databinder.components.hib;
 
-import net.databinder.hib.Databinder;
-
 import org.apache.wicket.Page;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.model.IModel;
+
+import net.databinder.hib.Databinder;
 
 /**
  * Boomarkable link with object identifier set automatically from the attached object.
@@ -56,7 +56,7 @@ public class PageSourceLink<T> extends BookmarkablePageLink {
 	}
 	/** Sets the id parameter to  the identifier given by Hibernate*/
 	protected void setParameters() {
-		setParameter(idParameter, 
+		getPageParameters().add(idParameter,
 				Databinder.getHibernateSession().getIdentifier(getModelObject()).toString());
 	}
 }

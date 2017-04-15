@@ -1,13 +1,6 @@
 package net.databinder.components.hib;
 
-import net.databinder.components.AjaxCell;
-import net.databinder.components.AjaxOnKeyPausedUpdater;
-import net.databinder.models.hib.CriteriaBuilder;
-import net.databinder.models.hib.PropertyQueryBinder;
-import net.databinder.models.hib.QueryBinder;
-
 import org.apache.wicket.MarkupContainer;
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.form.Form;
@@ -16,11 +9,18 @@ import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
+
+import net.databinder.components.AjaxCell;
+import net.databinder.components.AjaxOnKeyPausedUpdater;
+import net.databinder.models.hib.CriteriaBuilder;
+import net.databinder.models.hib.PropertyQueryBinder;
+import net.databinder.models.hib.QueryBinder;
 
 /**
  * Panel for a "live" search field with a clear button. Instances of this class must
@@ -136,8 +136,8 @@ public abstract class SearchPanel extends Panel {
 				@Override
         public void onClick(final AjaxRequestTarget target) {
 					resetSearchModelObject();
-					target.addComponent(searchWrap);
-					target.addComponent(clearWrap);
+					target.add(searchWrap);
+					target.add(clearWrap);
 					onUpdate(target);
 				}
 				/** Hide when search is blank. */
@@ -148,14 +148,14 @@ public abstract class SearchPanel extends Panel {
 			};
 			clearLink.setOutputMarkupId(true);
 			clearLink.add( new Image("clear",
-					new ResourceReference(this.getClass(), "clear.png")));
+					new PackageResourceReference(this.getClass(), "clear.png")));
 			clearWrap.add(clearLink);
 
 			// triggered when user pauses or tabs out
 			search.add(new AjaxOnKeyPausedUpdater() {
 				@Override
         protected void onUpdate(final AjaxRequestTarget target) {
-					target.addComponent(clearWrap);
+					target.add(clearWrap);
 					SearchPanel.this.onUpdate(target);
 				}
 			});

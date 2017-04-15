@@ -26,7 +26,7 @@
 <!--   <module>databinder-models-jpa1</module> -->
 <!--   <module>databinder-models-cay</module> -->
   <module>databinder-components</module>
-<!--   <module>databinder-components-hib</module> -->
+  <module>databinder-components-hib</module>
 <!--   <module>databinder-components-cay</module> -->
   <module>databinder-auth-components</module>
   <module>databinder-auth-components-hib</module>

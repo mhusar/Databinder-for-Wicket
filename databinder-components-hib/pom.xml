@@ -6,7 +6,7 @@
  <parent>
   <groupId>net.databinder</groupId>
   <artifactId>databinder-parent</artifactId>
-  <version>1.3.2-SNAPSHOT</version>
+  <version>1.7-SNAPSHOT</version>
  </parent>
  <dependencies>
   <dependency>
@@ -23,6 +23,11 @@
    <groupId>org.apache.wicket</groupId>
    <artifactId>wicket-extensions</artifactId>
    <version>${wicket.version}</version>
+  </dependency>
+  <dependency>
+  	<groupId>org.wicketstuff</groupId>
+  	<artifactId>wicket15-tree</artifactId>
+  	<version>7.0.2</version>
   </dependency>
  </dependencies>
 </project>

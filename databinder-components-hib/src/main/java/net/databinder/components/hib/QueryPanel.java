@@ -24,9 +24,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import net.databinder.hib.Databinder;
-import net.databinder.models.hib.HibernateObjectModel;
-
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
@@ -54,6 +51,9 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.Type;
+
+import net.databinder.hib.Databinder;
+import net.databinder.models.hib.HibernateObjectModel;
 
 /**
  * A Panel used to display a textarea to enter an HQL query and execute it
@@ -121,7 +121,7 @@ public class QueryPanel extends Panel {
 				} catch (IllegalStateException e) {
 					note(e);
 				}
-				target.addComponent(resultsHolder);
+				target.add(resultsHolder);
 			}
 			private void note(Exception e) {
 				resultsHolder.add(new Label("results", 
@@ -146,7 +146,7 @@ public class QueryPanel extends Panel {
 				public void detach() {
 				}
 			
-				public int size() {
+				public long size() {
 					Session sess = Databinder.getHibernateSession();
 					Query query = sess.createQuery(getQuery());
 					return query.list().size();
@@ -161,13 +161,14 @@ public class QueryPanel extends Panel {
 					return new CompoundPropertyModel(new HibernateObjectModel(object));
 				}
 			
-				public Iterator iterator(int first, int count) {
+				public Iterator iterator(long first, long count) {
 					Session sess =  Databinder.getHibernateSession();
 					long start = System.nanoTime();
 					try {
 						Query q = sess.createQuery(getQuery());
-						q.setFirstResult(first);
-						q.setMaxResults(count);
+						// TODO [migration]: remove narrowing cast after hibernate upgrade?
+						q.setFirstResult((int)first);
+						q.setMaxResults((int)count);
 						return q.iterate();
 					} finally {
 						float nanoTime = ((System.nanoTime()-start) / 1000) / 1000.0f;
@@ -175,7 +176,7 @@ public class QueryPanel extends Panel {
 					}
 				}
 			};
-			IColumn[] columns;
+			List<IColumn> columns = new ArrayList<>();
 			Session sess =  Databinder.getHibernateSession();
 			Query q = sess.createQuery(query.getQuery());
 			String[] aliases;
@@ -188,11 +189,10 @@ public class QueryPanel extends Panel {
 			}
 			
 			if (returnTypes.length != 1) {
-				columns = new IColumn[returnTypes.length];
 				for (int i = 0; i < returnTypes.length; i++) {
 					String alias = aliases == null || aliases.length <= i?returnTypes[i].getName():aliases[i];
 					final int index = i;
-					columns[i] = new AbstractColumn(new Model(alias)) {
+					columns.set(i, new AbstractColumn(new Model(alias)) {
 						private static final long serialVersionUID = 1L;
 
 						public void populateItem(Item cellItem, String componentId, IModel rowModel) {
@@ -200,35 +200,33 @@ public class QueryPanel extends Panel {
 							cellItem.add(new Label(componentId, 
 									new Model(objects[index]==null?"":objects[index].toString())));
 						}
-					};
+					});
 				}
 			} else {
 				Type returnType = returnTypes[0];
 				if (returnType.isEntityType()) {
 					Class clss = returnType.getReturnedClass();
 					ClassMetadata metadata = Databinder.getHibernateSessionFactory().getClassMetadata(clss);
-					List<IColumn> cols = new ArrayList<IColumn>();
 					String idProp = metadata.getIdentifierPropertyName();
-					cols.add(new PropertyColumn(new Model(idProp), idProp));
+					columns.add(new PropertyColumn(new Model(idProp), idProp));
 					String[] properties = metadata.getPropertyNames();
 					for (String prop : properties) {
 						Type type = metadata.getPropertyType(prop);
 						if (type.isCollectionType()) {
 							// TODO: see if we could provide a link to the collection value
 						} else {
-							cols.add(new PropertyColumn(new Model(prop), prop));
+							columns.add(new PropertyColumn(new Model(prop), prop));
 						}
 					}
-					columns = (IColumn[]) cols.toArray(new IColumn[cols.size()]);
 				} else {
 					String alias = aliases == null || aliases.length == 0?returnType.getName():aliases[0];
-					columns = new IColumn[] {new AbstractColumn(new Model(alias)) {
+					columns.add(new AbstractColumn(new Model(alias)) {
 						private static final long serialVersionUID = 1L;
 
 						public void populateItem(Item cellItem, String componentId, IModel rowModel) {
 							cellItem.add(new Label(componentId, rowModel));
 						}
-					}};
+					});
 				}
 			}
 			DataTable dataTable = new DataTable("results", columns, dataProvider, 10);

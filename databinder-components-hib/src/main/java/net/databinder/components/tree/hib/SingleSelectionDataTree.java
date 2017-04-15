@@ -4,11 +4,11 @@ import java.util.Collection;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import org.apache.wicket.extensions.markup.html.tree.ITreeState;
+
 import net.databinder.components.tree.data.DataTreeObject;
 import net.databinder.models.hib.HibernateListModel;
 import net.databinder.models.hib.HibernateObjectModel;
-
-import org.apache.wicket.markup.html.tree.ITreeState;
 
 
 
