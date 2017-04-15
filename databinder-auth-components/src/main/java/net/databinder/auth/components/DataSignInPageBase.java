@@ -18,24 +18,24 @@
  */
 package net.databinder.auth.components;
 
-import net.databinder.auth.AuthSession;
-import net.databinder.auth.AuthApplication;
-import net.databinder.auth.data.DataUser;
-import net.databinder.components.DataStyleLink;
-import net.databinder.components.SourceList;
-
 import org.apache.wicket.Application;
 import org.apache.wicket.Component;
-import org.apache.wicket.IClusterable;
 import org.apache.wicket.Page;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.Session;
 import org.apache.wicket.authorization.UnauthorizedInstantiationException;
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.util.io.IClusterable;
+import org.apache.wicket.util.string.StringValue;
+
+import net.databinder.auth.AuthApplication;
+import net.databinder.auth.AuthSession;
+import net.databinder.auth.data.DataUser;
+import net.databinder.components.DataStyleLink;
+import net.databinder.components.SourceList;
 
 /**
  * Sign in and registration page.
@@ -75,16 +75,15 @@ public abstract class DataSignInPageBase<T extends DataUser> extends WebPage {
 			throw new UnauthorizedInstantiationException(DataSignInPageBase.class);
 
 		if (params != null) {
-			String username = params.getString("username");
-			String token = params.getString("token");
+			StringValue username = params.get("username");
+			StringValue token = params.get("token");
 			// e-mail auth, for example
-			if (username != null && token != null) {
-				T user = app.getUser(username);
+			if (!username.isNull() && !token.isNull()) {
+				T user = app.getUser(username.toString());
 				
 				if (user != null && app.getToken(user).equals(token))
 					getAuthSession().signIn(user, true);
 				setResponsePage(((Application)app).getHomePage());
-				setRedirect(true);
 				return;
 			}
 		}

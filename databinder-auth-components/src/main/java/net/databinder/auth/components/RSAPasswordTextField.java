@@ -28,22 +28,26 @@ import java.security.interfaces.RSAPublicKey;
 
 import javax.crypto.Cipher;
 
-import net.databinder.auth.valid.EqualPasswordConvertedInputValidator;
-
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.MarkupStream;
+import org.apache.wicket.markup.head.HeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.IHeaderContributor;
-import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
-import org.apache.wicket.markup.html.resources.JavascriptResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.request.Response;
+import org.apache.wicket.request.resource.PackageResourceReference;
+import org.apache.wicket.request.resource.ResourceReference;
 import org.apache.wicket.util.convert.ConversionException;
 import org.apache.wicket.util.crypt.Base64;
+
+import net.databinder.auth.valid.EqualPasswordConvertedInputValidator;
 
 /**
  * Note: if equal password validation is need, use EqualPasswordConvertedInputValidator.
@@ -52,11 +56,11 @@ import org.apache.wicket.util.crypt.Base64;
  * @see EqualPasswordConvertedInputValidator
  */
 public class RSAPasswordTextField extends PasswordTextField implements IHeaderContributor {
-	private static final ResourceReference RSA_JS = new JavascriptResourceReference(
+	private static final PackageResourceReference RSA_JS = new PackageResourceReference(
 			RSAPasswordTextField.class, "RSA.js");
-	private static final ResourceReference BARRETT_JS = new JavascriptResourceReference(
+	private static final PackageResourceReference BARRETT_JS = new PackageResourceReference(
 			RSAPasswordTextField.class, "Barrett.js");
-	private static final ResourceReference BIGINT_JS = new JavascriptResourceReference(
+	private static final PackageResourceReference BIGINT_JS = new PackageResourceReference(
 			RSAPasswordTextField.class, "BigInt.js");
 
 	private String challenge;
@@ -79,9 +83,10 @@ public class RSAPasswordTextField extends PasswordTextField implements IHeaderCo
 		init(form);
 	}
 	@Override
-	protected void onRender(MarkupStream markupStream) {
+	public void onComponentTagBody(MarkupStream markupStream, ComponentTag openTag)  {
+		// TODO [migration]: This probably won't work. We'll fix it later.
 		getResponse().write("<noscript><div style='color: red;'>Please enable JavaScript and reload this page.</div></noscript>");
-		super.onRender(markupStream);
+		super.onComponentTagBody(markupStream, openTag);
 		getResponse().write("<script>document.getElementById('" + getMarkupId() + "').style.visibility='visible';</script>");
 	}
 	
@@ -135,9 +140,9 @@ public class RSAPasswordTextField extends PasswordTextField implements IHeaderCo
 	}
 	
 	public void renderHead(IHeaderResponse response) {
-		response.renderJavascriptReference(BIGINT_JS);
-		response.renderJavascriptReference(BARRETT_JS);
-		response.renderJavascriptReference(RSA_JS);
+		response.render(JavaScriptHeaderItem.forReference(BIGINT_JS));
+		response.render(JavaScriptHeaderItem.forReference(BARRETT_JS));
+		response.render(JavaScriptHeaderItem.forReference(RSA_JS));
 
         RSAPublicKey pub= (RSAPublicKey)keypair.getPublic();
 		StringBuilder keyBuf = new StringBuilder();
@@ -149,7 +154,8 @@ public class RSAPasswordTextField extends PasswordTextField implements IHeaderCo
 			.append("', '', '")
 			.append(pub.getModulus().toString(16))
 			.append("');");
-		response.renderJavascript(keyBuf.toString(), "rsa_key");
+//		response.renderJavascript(keyBuf.toString(), "rsa_key");
+		response.render(JavaScriptHeaderItem.forScript(keyBuf.toString(), "rsa_key"));
 		
 		// the challenge is unique per component instance, send for every component
 		StringBuilder chalBuf = new StringBuilder();
@@ -159,7 +165,8 @@ public class RSAPasswordTextField extends PasswordTextField implements IHeaderCo
 			.append(" = '")
 			.append(challenge)
 			.append("';");
-		response.renderJavascript(chalBuf.toString(), null);
+//		response.renderJavascript(chalBuf.toString(), null);
+		response.render(JavaScriptHeaderItem.forScript(chalBuf.toString(), null));
 	}
 	
 	protected String getChallengeVar() {

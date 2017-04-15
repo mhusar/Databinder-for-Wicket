@@ -97,7 +97,6 @@ public class DataSignInPanel<T extends DataUser> extends Panel {
 					(Boolean)rememberMe.getModelObject()))
 			{
 				if (returnPage == null) {
-					if (!continueToOriginalDestination())
 						setResponsePage(getApplication().getHomePage());
 				} else
 					setResponsePage(returnPage.get());
@@ -114,7 +113,7 @@ public class DataSignInPanel<T extends DataUser> extends Panel {
 	/** @return content to appear above form, base return FeedbackPanel */
 	protected Component highFormSocket(String id) {
 		return new FeedbackPanel(id)
-			.add(new AttributeModifier("class", true, new Model<String>("feedback")));
+			.add(new AttributeModifier("class", new Model<String>("feedback")));
 	}
 
 	/** @return content to appear below form, base return blank */

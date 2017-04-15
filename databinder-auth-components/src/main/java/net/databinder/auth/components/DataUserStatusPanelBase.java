@@ -18,14 +18,8 @@
  */
 package net.databinder.auth.components;
 
-import net.databinder.auth.AuthApplication;
-import net.databinder.auth.AuthSession;
-import net.databinder.auth.components.DataSignInPageBase.ReturnPage;
-import net.databinder.auth.data.DataUser;
-
 import org.apache.wicket.Page;
-import org.apache.wicket.authorization.strategies.role.Roles;
-import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.authroles.authorization.strategies.role.Roles;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -33,6 +27,11 @@ import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
+
+import net.databinder.auth.AuthApplication;
+import net.databinder.auth.AuthSession;
+import net.databinder.auth.components.DataSignInPageBase.ReturnPage;
+import net.databinder.auth.data.DataUser;
 
 /**
  * Displays sign in and out links, as well as current user if any.
