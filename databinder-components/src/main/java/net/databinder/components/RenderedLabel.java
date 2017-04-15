@@ -9,7 +9,6 @@ import java.awt.font.LineBreakMeasurer;
 import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
-import java.io.InputStream;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.util.LinkedList;
@@ -19,17 +18,15 @@ import java.util.regex.Pattern;
 
 import org.apache.wicket.Application;
 import org.apache.wicket.Component;
-import org.apache.wicket.Resource;
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.SharedResources;
-import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.image.resource.RenderedDynamicImageResource;
 import org.apache.wicket.model.IComponentInheritedModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IWrapModel;
-import org.apache.wicket.protocol.http.WebResponse;
+import org.apache.wicket.request.resource.IResource;
+import org.apache.wicket.request.resource.SharedResourceReference;
 import org.apache.wicket.util.string.Strings;
 
 /*
@@ -140,17 +137,21 @@ public class RenderedLabel extends Image  {
 		int curHash = getLabelHash();
 		if (isShared) {
 			if (labelHash != curHash) {
-				String hash = Integer.toHexString(curHash);
+				String hash	 = Integer.toHexString(curHash);
 				SharedResources shared = getApplication().getSharedResources();
-				try { resource = (RenderedTextImageResource) shared.get(RenderedLabel.class, hash, null, null, false); }
-				catch (ClassCastException e) {
-					 // was placeholder for missing PackageResourceReference
-					shared.remove(shared.resourceKey(RenderedLabel.class, hash, null, null));
+				// TODO [migration]: unclear if the following works and if there isn't a better way now
+				try {
+					resource = (RenderedTextImageResource) shared
+							.get(RenderedLabel.class, hash, null, null, null, false).getResource();
+				} catch (ClassCastException e) {
+					// was placeholder for missing PackageResourceReference
+					shared.remove(shared.get(RenderedLabel.class, hash, null, null, null, false).getKey());
 				}
-				if (resource == null)
-					shared.add(RenderedLabel.class, hash, null, null,
+				if (resource == null){
+					shared.add(RenderedLabel.class, hash, null, null, null,
 							resource = newRenderedTextImageResource(true));
-				setImageResourceReference(new ResourceReference(RenderedLabel.class, hash));
+				}
+				setImageResourceReference(new SharedResourceReference(RenderedLabel.class, hash));
 			}
 		} else {
 			if (resource == null)
@@ -158,7 +159,8 @@ public class RenderedLabel extends Image  {
 			else if (labelHash != curHash)
 				resource.setState(this);
 		}
-		resource.setCacheable(isShared);
+		// TODO [migration]: use appropriate IResourceCachingStrategy (do we need all this)
+//		resource.setCacheable(isShared);
 		labelHash = getLabelHash();
 	}
 
@@ -259,7 +261,8 @@ public class RenderedLabel extends Image  {
 	 * Utility method to load a specific instance of a the rendering shared resource.
 	 */
 	protected static void loadSharedResources(RenderedTextImageResource res, String text, Font font, Color color, Color backgroundColor, Integer maxWidth) {
-		res.setCacheable(true);
+		// TODO [migration]: caching strategy instead?
+		//		res.setCacheable(true);
 		res.backgroundColor = backgroundColor == null ? defaultBackgroundColor : backgroundColor;
 		res.color = color == null ? defaultColor : color;
 		res.font = font == null ? defaultFont : font;
@@ -269,7 +272,7 @@ public class RenderedLabel extends Image  {
 		String hash = Integer.toHexString(getLabelHash(text, font, color, backgroundColor, maxWidth));
 		SharedResources shared = Application.get().getSharedResources();
 
-		shared.add(RenderedLabel.class, hash, null, null, res);
+		shared.add(RenderedLabel.class, hash, null, null, null, res);
 	}
 
 	/**
@@ -280,7 +283,8 @@ public class RenderedLabel extends Image  {
 	 */
 	protected RenderedTextImageResource newRenderedTextImageResource(boolean isShared) {
 		RenderedTextImageResource res = new RenderedTextImageResource();
-		res.setCacheable(isShared);
+		// TODO [migration]
+//		res.setCacheable(isShared);
 		res.setState(this);
 		return res;
 	}
@@ -302,10 +306,11 @@ public class RenderedLabel extends Image  {
 			setType(BufferedImage.TYPE_INT_ARGB); // allow alpha transparency
 		}
 		
-		@Override
-		protected void setHeaders(WebResponse response) {
-			// don't set expire headers; if resource changes, its URL will change
-		}
+		// TODO [migration]: do we need to handle this?
+//		@Override
+//		protected void setHeaders(WebResponse response) {
+//			// don't set expire headers; if resource changes, its URL will change
+//		}
 
 		public void setState(RenderedLabel label) {
 			backgroundColor = label.getBackgroundColor();
@@ -322,7 +327,8 @@ public class RenderedLabel extends Image  {
          * text. Neither dimension will be decreased, unless the text in blank. Blank text is rendered
          * as a 1 x 1 pixel square, with prior dimensions discarded.
          */
-		protected boolean render(final Graphics2D graphics)
+		@Override
+		protected boolean render(final Graphics2D graphics, Attributes attributes)
 		{
 			final int width = getWidth(), height = getHeight();
 
@@ -419,7 +425,7 @@ public class RenderedLabel extends Image  {
 		 * use the size information in the IMG tag.
 		 */
 		public void preload() {
-			getImageData();
+			getImageData(null);
 		}
 	}
 
@@ -477,15 +483,17 @@ public class RenderedLabel extends Image  {
 	 * @param fontRes Resource containing  a TrueType font descriptor.
 	 * @return Plain, 16pt font derived from the resource.
 	 */
-	public static Font fontForResource(Resource fontRes) {
-		try {
-			InputStream is = fontRes.getResourceStream().getInputStream();
-			Font font = Font.createFont(Font.TRUETYPE_FONT, is);
-			is.close();
-			return font.deriveFont(Font.PLAIN, 16);
-		} catch (Throwable e) {
-			throw new WicketRuntimeException("Error loading font resources", e);
-		}
+	public static Font fontForResource(IResource fontRes) {
+		return null;
+		// TODO [migration]: ?
+//		try {
+//			InputStream is = fontRes.getResourceStream().getInputStream();
+//			Font font = Font.createFont(Font.TRUETYPE_FONT, is);
+//			is.close();
+//			return font.deriveFont(Font.PLAIN, 16);
+//		} catch (Throwable e) {
+//			throw new WicketRuntimeException("Error loading font resources", e);
+//		}
 	}
 
 	public boolean isAntiAliased() {

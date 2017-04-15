@@ -1,10 +1,13 @@
 package net.databinder.components;
 
-import org.apache.wicket.ResourceReference;
+import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.markup.ComponentTag;
-import org.apache.wicket.markup.html.IHeaderResponse;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
+import org.apache.wicket.request.resource.PackageResourceReference;
+import org.apache.wicket.request.resource.ResourceReference;
 
 /*
  * Databinder: a simple bridge from Wicket to Hibernate
@@ -33,8 +36,9 @@ import org.apache.wicket.markup.html.IHeaderResponse;
  *
  */
 public abstract class AjaxOnKeyPausedSubmitter extends AjaxFormSubmitBehavior {
-
-	private static final ResourceReference JAVASCRIPT = new ResourceReference(
+	private static final long serialVersionUID = 1L;
+	
+	private static final ResourceReference JAVASCRIPT = new PackageResourceReference(
 			AjaxOnKeyPausedSubmitter.class, "AjaxOnKeyPausedUpdater.js");
 
 	/**
@@ -48,9 +52,10 @@ public abstract class AjaxOnKeyPausedSubmitter extends AjaxFormSubmitBehavior {
 	 * Adds needed JavaScript to header.
 	 */
 	@Override
-	public void renderHead(IHeaderResponse response) {
-		super.renderHead(response);
-		response.renderJavascriptReference(JAVASCRIPT);
+	public void renderHead(final Component component, IHeaderResponse response) {
+		super.renderHead(component, response);
+		response.render(JavaScriptHeaderItem.forReference(JAVASCRIPT));
+		
 	}
 
 	/**

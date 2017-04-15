@@ -22,20 +22,22 @@ import java.net.URI;
 import java.util.regex.Pattern;
 
 import org.apache.wicket.validation.IValidatable;
-import org.apache.wicket.validation.validator.AbstractValidator;
+import org.apache.wicket.validation.IValidator;
+import org.apache.wicket.validation.ValidationError;
 
 /**
  * Validate that the input is a particular kind of URI.
  * @author Nathan Hamblen
  */
-public abstract class URIValidator extends AbstractValidator {
+public abstract class URIValidator implements IValidator<URI> {
+	private static final long serialVersionUID = 1L;
 
-	@Override
-	protected void onValidate(IValidatable validatable) {
+	public void validate(IValidatable<URI> validatable) {
+	
 		onValidate(validatable, (URI)validatable.getValue());
 	}
 
-	public abstract void onValidate(IValidatable formComponent, URI uri);
+	public abstract void onValidate(IValidatable<URI> formComponent, URI uri);
 
 	/**
 	 * Accepts only URIs having an http or https scheme.
@@ -54,24 +56,19 @@ public abstract class URIValidator extends AbstractValidator {
 	}
 
 	private static class SchemeValidator extends URIValidator {
+		private static final long serialVersionUID = 1L;
 		Pattern pattern;
-		String resourceKeySuffix;
 
 		public SchemeValidator(String pattern, String resourceKeySuffix) {
 			this.pattern = Pattern.compile(pattern);
-			this.resourceKeySuffix = resourceKeySuffix;
 		}
 
 		@Override
-		public void onValidate(IValidatable validatable, URI uri) {
+		public void onValidate(IValidatable<URI> validatable, URI uri) {
 			{
 				if (uri != null && (uri.getScheme() == null || !pattern.matcher(uri.getScheme()).matches()))
-					error(validatable);
+					validatable.error(new ValidationError(this));
 			}
-		}
-		@Override
-		protected String resourceKey() {
-			return "URIValidator." + resourceKeySuffix;
 		}
 	}
 

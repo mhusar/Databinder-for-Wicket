@@ -45,7 +45,7 @@ public class FontFormattedRenderedLabel extends RenderedLabel {
 	
 	protected FontFormattedRenderedImageResource newRenderedTextImageResource(boolean isShared) {
 		FontFormattedRenderedImageResource res = new FontFormattedRenderedImageResource();
-		res.setCacheable(isShared);
+//		res.setCacheable(isShared);
 		res.setState(this);
 		return res;
 	}

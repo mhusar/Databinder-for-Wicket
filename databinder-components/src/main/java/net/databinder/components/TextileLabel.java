@@ -2,12 +2,12 @@ package net.databinder.components;
 
 import java.util.Locale;
 
-import jtextile.JTextile;
-
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.util.convert.IConverter;
-import org.apache.wicket.util.convert.converters.AbstractConverter;
+import org.apache.wicket.util.convert.converter.AbstractConverter;
+
+import jtextile.JTextile;
 
 /**
  * Filters its model through JTextile before rendering.

@@ -18,15 +18,17 @@
  */
 package net.databinder.components;
 
-import org.apache.wicket.behavior.HeaderContributor;
-import org.apache.wicket.markup.html.resources.JavaScriptReference;
+import org.apache.wicket.old.JavaScriptReference;
+import org.apache.wicket.request.resource.JavaScriptResourceReference;
 
 /**
  * Component for a script (JavaScript) link. The stylesheet is expected to be named
  * &lt;ClassName&gt;.js for the class specified in the constructor and be located in 
  * the same package as that class.
  * @author Nathan Hamblen
+ * @deprecated Use {@link JavaScriptResourceReference} or similar
  */
+@Deprecated
 public class ScriptLink extends JavaScriptReference {
 	private static String EXT = ".js";
 	
@@ -35,14 +37,15 @@ public class ScriptLink extends JavaScriptReference {
 		super(id, componentClass, componentClass.getSimpleName() + EXT);
 	}
 	
-	/**
-	 * Get a [classname].js header contriubtor that can be added to a component without any reference in
-	 * its markup. Useful for subclasses that do not have their own templates.
-	 * @param componentClass javascript file should be in same package and have same base name
-	 * @return contributor to add to component
-	 */
-	public static HeaderContributor headerContributor(Class componentClass) {
-		return HeaderContributor.forJavaScript(
-				componentClass, componentClass.getSimpleName() + EXT);
-	}
+	// TODO [migration]: what to do here?
+//	/**
+//	 * Get a [classname].js header contriubtor that can be added to a component without any reference in
+//	 * its markup. Useful for subclasses that do not have their own templates.
+//	 * @param componentClass javascript file should be in same package and have same base name
+//	 * @return contributor to add to component
+//	 */
+//	public static HeaderContributor headerContributor(Class componentClass) {
+//		return HeaderContributor.forJavaScript(
+//				componentClass, componentClass.getSimpleName() + EXT);
+//	}
 }

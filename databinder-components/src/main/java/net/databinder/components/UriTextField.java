@@ -21,12 +21,12 @@ package net.databinder.components;
 import java.net.URI;
 import java.util.Locale;
 
-import net.databinder.converters.URIConverter;
-import net.databinder.validators.URIValidator;
-
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.util.convert.IConverter;
 import org.apache.wicket.util.string.Strings;
+
+import net.databinder.converters.URIConverter;
+import net.databinder.validators.URIValidator;
 
 /**
  * TextField for URIs with a default scheme. This field establishes a default URI scheme

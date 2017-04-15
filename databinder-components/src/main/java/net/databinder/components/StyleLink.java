@@ -19,14 +19,17 @@
 package net.databinder.components;
 
 import org.apache.wicket.markup.ComponentTag;
-import org.apache.wicket.markup.html.resources.PackagedResourceReference;
+import org.apache.wicket.markup.head.CssReferenceHeaderItem;
+import org.apache.wicket.old.PackagedResourceReference;
 
 /**
  * Component for a stylesheet link. The stylesheet is expected to be named
  * &lt;ClassName&gt;.css for the class specified in the constructor and be located in 
  * the same package as that class.
  * @author Nathan Hamblen
+ * @deprecated {@link CssReferenceHeaderItem}
  */
+@Deprecated
 public class StyleLink extends PackagedResourceReference {
 	
 	/** Builds a StyleLinkbased on the given class. */

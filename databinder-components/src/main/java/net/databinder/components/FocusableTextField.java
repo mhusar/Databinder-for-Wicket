@@ -19,9 +19,12 @@
 package net.databinder.components;
 
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
+import org.apache.wicket.markup.head.OnLoadHeaderItem;
 import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.markup.html.internal.HtmlHeaderContainer;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.request.resource.PackageResourceReference;
 
 /**
  * TextField that can be told to focus itself on the next request.  Works in conjunction with 
@@ -36,7 +39,6 @@ public class FocusableTextField<T> extends TextField<T> {
 	 */
 	public FocusableTextField(String id, IModel<T> model) {
 		super (id, model);
-		add(ScriptLink.headerContributor(FocusableTextField.class));
 	}
 
 	/**
@@ -47,9 +49,11 @@ public class FocusableTextField<T> extends TextField<T> {
 	}
 	
 	@Override
-	public void renderHead(HtmlHeaderContainer container) {
-		super.renderHead(container);
-		container.getHeaderResponse().renderOnLoadJavascript("initFocusableTextField();");
+	public void renderHead(IHeaderResponse response) {
+		super.renderHead(response);
+		response.render(JavaScriptHeaderItem.forReference(
+				new PackageResourceReference(FocusableTextField.class, "FocusableTextField.js")));
+		response.render(OnLoadHeaderItem.forScript("initFocusableTextField();"));
 	}
 	
 	/**
