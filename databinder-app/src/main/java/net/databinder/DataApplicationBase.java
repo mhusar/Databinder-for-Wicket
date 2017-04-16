@@ -23,21 +23,21 @@ import java.net.URI;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.wicket.ConverterLocator;
+import org.apache.wicket.IConverterLocator;
+import org.apache.wicket.IRequestCycleProvider;
+import org.apache.wicket.Page;
+import org.apache.wicket.markup.html.pages.PageExpiredErrorPage;
+import org.apache.wicket.protocol.http.WebApplication;
+import org.apache.wicket.request.cycle.RequestCycle;
+import org.apache.wicket.request.cycle.RequestCycleContext;
+import org.apache.wicket.request.http.WebRequest;
+import org.apache.wicket.request.http.WebResponse;
+
 import net.databinder.components.PageExpiredCookieless;
 import net.databinder.converters.ColorConverter;
 import net.databinder.converters.URIConverter;
 import net.databinder.web.NorewriteWebResponse;
-
-import org.apache.wicket.IConverterLocator;
-import org.apache.wicket.Page;
-import org.apache.wicket.Request;
-import org.apache.wicket.RequestCycle;
-import org.apache.wicket.Response;
-import org.apache.wicket.markup.html.pages.PageExpiredErrorPage;
-import org.apache.wicket.protocol.http.WebApplication;
-import org.apache.wicket.protocol.http.WebRequest;
-import org.apache.wicket.protocol.http.WebResponse;
-import org.apache.wicket.util.convert.ConverterLocator;
 
 /** Common functionality for Databinder applications. */
 public abstract class DataApplicationBase extends WebApplication {
@@ -51,7 +51,9 @@ public abstract class DataApplicationBase extends WebApplication {
 	@Override
 	protected void internalInit() {
 		super.internalInit();
+		setRequestCycleProvider(new CookieRequestCycleProvider());
 		dataInit();
+		
 	}
 	
 	/** Databinder initialization, client applications should not normally override.*/
@@ -72,18 +74,13 @@ public abstract class DataApplicationBase extends WebApplication {
 	 * a custom WebResponse that disables URL rewriting.
 	 */
 	@Override
-	protected WebResponse newWebResponse(final HttpServletResponse servletResponse)
-	{
-		if (isCookielessSupported())
-			return super.newWebResponse(servletResponse);
-		return NorewriteWebResponse.getNew(this, servletResponse);
+	protected WebResponse newWebResponse(WebRequest webRequest, HttpServletResponse httpServletResponse) {
+		if (isCookielessSupported()){
+			return super.newWebResponse(webRequest, httpServletResponse);
+		}
+		return NorewriteWebResponse.getNew(this, webRequest, httpServletResponse);	
 	}
 	
-	@Override
-	public RequestCycle newRequestCycle(Request request, Response response) {
-		return new CookieRequestCycle(this, (WebRequest) request, (WebResponse) response);
-	}
-
 	/**
 	 * @return  true if cookieless use is supported through URL rewriting.
 	 */
@@ -124,6 +121,14 @@ public abstract class DataApplicationBase extends WebApplication {
 	 * @return true if running in a development environment
 	 */
 	protected boolean isDevelopment() {
-		return  getConfigurationType().equalsIgnoreCase(DEVELOPMENT);
+		return usesDevelopmentConfig();
 	}
+
+	private static class CookieRequestCycleProvider implements IRequestCycleProvider {
+
+		public RequestCycle get(RequestCycleContext context) {
+			return new CookieRequestCycle(context);
+		}
+	}
+	
 }

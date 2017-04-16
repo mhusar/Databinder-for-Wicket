@@ -24,18 +24,18 @@ import java.net.URLEncoder;
 
 import javax.servlet.http.Cookie;
 
-import net.databinder.CookieRequestCycle;
-import net.databinder.auth.data.DataUser;
-
 import org.apache.wicket.Application;
-import org.apache.wicket.Request;
-import org.apache.wicket.RequestCycle;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.protocol.http.WebApplication;
-import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.protocol.http.WebSession;
+import org.apache.wicket.request.Request;
+import org.apache.wicket.request.cycle.RequestCycle;
+import org.apache.wicket.request.http.WebResponse;
 import org.apache.wicket.util.time.Duration;
+
+import net.databinder.CookieRequestCycle;
+import net.databinder.auth.data.DataUser;
 
 /**
  * Base class for Databinder implementations providing an implementation for
@@ -214,12 +214,12 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
 	 * Detach userModel manually, as it isnt' attached to any component.
 	 */
 	@Override
-	protected void detach() {
+	public void detach() {
 		if (userModel != null)
 			userModel.detach();
 	}
 	
-	/** Nullifies userModela nd clears authentication cookies. */
+	/** Nullifies userModela and clears authentication cookies. */
 	protected void clearUser() {
 		userModel = null;
 		CookieRequestCycle requestCycle = (CookieRequestCycle) RequestCycle.get();

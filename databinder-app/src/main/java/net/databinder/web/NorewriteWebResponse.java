@@ -22,7 +22,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.wicket.Application;
 import org.apache.wicket.protocol.http.BufferedWebResponse;
-import org.apache.wicket.protocol.http.WebResponse;
+import org.apache.wicket.protocol.http.servlet.ServletWebRequest;
+import org.apache.wicket.protocol.http.servlet.ServletWebResponse;
+import org.apache.wicket.request.http.WebRequest;
+import org.apache.wicket.request.http.WebResponse;
 
 /**
  * Creates web response objects that do not rewrite URLs for cookieless support. Buffered or
@@ -33,30 +36,32 @@ import org.apache.wicket.protocol.http.WebResponse;
  */
 public class NorewriteWebResponse {
 
-	public static WebResponse getNew(Application app, final HttpServletResponse servletResponse) {
-		return app.getRequestCycleSettings().getBufferResponse() ?
-				new Buffered(servletResponse) : new Unbuffered(servletResponse);
+	public static WebResponse getNew(Application app, final WebRequest webRequest,
+			final HttpServletResponse httpServletResponse) {
+		// TODO [migration]: does unbuffered case work?
+		return app.getRequestCycleSettings().getBufferResponse() ? new Buffered(httpServletResponse)
+				: new ServletWebResponse((ServletWebRequest) webRequest, httpServletResponse);
 	}
 	
 	static class Buffered extends BufferedWebResponse {
-		public Buffered(final HttpServletResponse httpServletResponse)
-		{ 
-			super(httpServletResponse); 
+		public Buffered(final HttpServletResponse httpServletResponse) {
+			// TODO [migration]: check if cast works
+			super((WebResponse) httpServletResponse); 
 		}
 		@Override
-		public CharSequence encodeURL(CharSequence url) {
-			return url;
+		public String encodeURL(CharSequence url) {
+			return url.toString();
 		}
 	}
 
-	static class Unbuffered extends WebResponse {
-		public Unbuffered(final HttpServletResponse httpServletResponse)
-		{ 
-			super(httpServletResponse); 
-		}
-		@Override
-		public CharSequence encodeURL(CharSequence url) {
-			return url;
-		}
-	}
+//	static class Unbuffered extends WebResponse {
+//		public Unbuffered(final HttpServletResponse httpServletResponse)
+//		{ 
+//			super(httpServletResponse); 
+//		}
+//		@Override
+//		public CharSequence encodeURL(CharSequence url) {
+//			return url;
+//		}
+//	}
 }

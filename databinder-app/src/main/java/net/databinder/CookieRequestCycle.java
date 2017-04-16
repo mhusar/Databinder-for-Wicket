@@ -19,35 +19,44 @@
 package net.databinder;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.Cookie;
 
-import org.apache.wicket.Response;
-import org.apache.wicket.protocol.http.WebApplication;
-import org.apache.wicket.protocol.http.WebRequest;
+import org.apache.wicket.request.cycle.RequestCycle;
+import org.apache.wicket.request.cycle.RequestCycleContext;
+import org.apache.wicket.request.http.WebRequest;
+import org.apache.wicket.util.cookies.CookieDefaults;
+import org.apache.wicket.util.cookies.CookieUtils;
 
 /**
  * Request cycle with cookie convenience methods that reflects removal immediately.
  */
-public class CookieRequestCycle extends ExceptionFilteringRequestCycle {
+// TODO [migration]: maybe better solved with RequestCycleListener? Or with authenticationStrategy and without custom
+// cookie handling.
+public class CookieRequestCycle extends RequestCycle {
+	public CookieRequestCycle(RequestCycleContext context) {
+		super(context);
+	}
+
 	/** cache of cookies from request */ 
 	private Map<String, Cookie> cookies;
 	
-	public CookieRequestCycle(WebApplication application, WebRequest request, Response response) {
-		super(application, request, response);
-	}
+	/** Cookie utils with default settings */
+	private CookieUtils cookieUtils;
 
 	/**
 	 * Return or build cache of cookies cookies from request.
 	 */
 	protected Map<String, Cookie> getCookies() {
 		if (cookies == null) {
-			Cookie ary[] = ((WebRequest)getRequest()).getCookies();
-			cookies = new HashMap<String, Cookie>(ary == null ? 0 : ary.length);
-			if (ary != null)
-				for (Cookie c : ary)
-					cookies.put(c.getName(), c);
+			WebRequest webRequest = (WebRequest)RequestCycle.get().getRequest();
+			List<Cookie> requestCookies = webRequest.getCookies();
+			cookies = new HashMap<String, Cookie>(requestCookies.size());
+			for (Cookie cookie : requestCookies) {
+				cookies.put(cookie.getName(), cookie);
+			}
 		}
 		return cookies;
 	}
@@ -80,10 +89,27 @@ public class CookieRequestCycle extends ExceptionFilteringRequestCycle {
 	 * @param name cookie name
 	 */
 	public void clearCookie(String name) {
-		getCookies().remove(name);
-		Cookie empty = new Cookie(name, "");
-		applyScope(empty);
-		getWebResponse().clearCookie(empty);
+		
+		// remove from local cache
+		getCookies().remove(name); 
+		
+		// remove from browser
+		CookieUtils cookieUtils = getCookieUtils();
+		cookieUtils.remove(name);
+	}
+	
+	/**
+	 * Make sure you always return a valid CookieUtils
+	 * 
+	 * @return CookieUtils
+	 */
+	private CookieUtils getCookieUtils() {
+		if (cookieUtils == null) {
+			CookieDefaults settings = new CookieDefaults();
+			settings.setHttpOnly(true);
+			cookieUtils = new CookieUtils(settings);
+		}
+		return cookieUtils;
 	}
 
 }
