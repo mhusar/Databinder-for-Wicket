@@ -23,29 +23,28 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.wicket.Component;
+import org.apache.wicket.RestartResponseAtInterceptPageException;
+import org.apache.wicket.Session;
+import org.apache.wicket.authorization.IUnauthorizedComponentInstantiationListener;
+import org.apache.wicket.authorization.UnauthorizedInstantiationException;
+import org.apache.wicket.authroles.authorization.strategies.role.IRoleCheckingStrategy;
+import org.apache.wicket.authroles.authorization.strategies.role.RoleAuthorizationStrategy;
+import org.apache.wicket.authroles.authorization.strategies.role.Roles;
+import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.request.Request;
+import org.apache.wicket.request.Response;
+import org.apache.wicket.request.cycle.RequestCycle;
+import org.apache.wicket.util.crypt.Base64;
+import org.hibernate.cfg.AnnotationConfiguration;
+import org.hibernate.criterion.Restrictions;
+
 import net.databinder.auth.AuthApplication;
 import net.databinder.auth.AuthSession;
 import net.databinder.auth.components.hib.DataSignInPage;
 import net.databinder.auth.data.DataUser;
 import net.databinder.hib.DataApplication;
 import net.databinder.hib.Databinder;
-
-import org.apache.wicket.Component;
-import org.apache.wicket.Request;
-import org.apache.wicket.RequestCycle;
-import org.apache.wicket.Response;
-import org.apache.wicket.RestartResponseAtInterceptPageException;
-import org.apache.wicket.Session;
-import org.apache.wicket.authorization.IUnauthorizedComponentInstantiationListener;
-import org.apache.wicket.authorization.UnauthorizedInstantiationException;
-import org.apache.wicket.authorization.strategies.role.IRoleCheckingStrategy;
-import org.apache.wicket.authorization.strategies.role.RoleAuthorizationStrategy;
-import org.apache.wicket.authorization.strategies.role.Roles;
-import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.protocol.http.WebRequest;
-import org.apache.wicket.util.crypt.Base64UrlSafe;
-import org.hibernate.cfg.AnnotationConfiguration;
-import org.hibernate.criterion.Restrictions;
 
 /**
  * Adds basic authentication functionality to DataApplication. This class is a derivative
@@ -165,7 +164,7 @@ implements IUnauthorizedComponentInstantiationListener, IRoleCheckingStrategy, A
 	 * @return restricted token
 	 */
 	public String getToken(DataUser user) {
-		HttpServletRequest req = ((WebRequest) RequestCycle.get().getRequest()).getHttpServletRequest();
+		HttpServletRequest req = ((HttpServletRequest) RequestCycle.get().getRequest().getContainerRequest());
 		String fwd = req.getHeader("X-Forwarded-For");
 		if (fwd == null)
 			fwd = "nil";
@@ -173,6 +172,6 @@ implements IUnauthorizedComponentInstantiationListener, IRoleCheckingStrategy, A
 		user.getPassword().update(digest);
 		digest.update((fwd + "-" + req.getRemoteAddr()).getBytes());
 		byte[] hash = digest.digest(user.getUsername().getBytes());
-		return new String(Base64UrlSafe.encodeBase64(hash));
+		return new String(Base64.encodeBase64(hash));
 	}
 }

@@ -21,17 +21,16 @@ package net.databinder.hib;
 
 import java.util.HashMap;
 
-import net.databinder.DataApplicationBase;
-import net.databinder.components.hib.DataBrowser;
-
 import org.apache.wicket.Application;
-import org.apache.wicket.Request;
-import org.apache.wicket.RequestCycle;
-import org.apache.wicket.Response;
+import org.apache.wicket.IRequestCycleProvider;
 import org.apache.wicket.WicketRuntimeException;
-import org.apache.wicket.protocol.http.WebRequest;
+import org.apache.wicket.request.cycle.RequestCycle;
+import org.apache.wicket.request.cycle.RequestCycleContext;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
+
+import net.databinder.DataApplicationBase;
+import net.databinder.components.hib.DataBrowser;
 
 /**
  * Optional Databinder base Application class for configuration and session management. 
@@ -54,6 +53,7 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 	 */
 	protected void dataInit() {
 		buildHibernateSessionFactory(null);
+		setRequestCycleProvider(new DataRequestCycleProvider());
 		if (isDataBrowserAllowed())
 			mountDataBrowser();
 	}
@@ -75,7 +75,7 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 	 * This method is only called if isDataBrowserAllowed() returns true in init().
 	 */
 	protected void mountDataBrowser() {
-		mountBookmarkablePage("/dbrowse", BmarkDataBrowser.class);
+		mountPage("/dbrowse", BmarkDataBrowser.class);
 	}
 
 	/**
@@ -166,16 +166,6 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 	protected void setHibernateSessionFactory(Object key, SessionFactory sf) {
 		hibernateSessionFactories.put(key, sf);
 	}
-
-	
-	/**
-	 * @return a DataRequestCycle
-	 * @see DataRequestCycle
-	 */
-	@Override
-	public RequestCycle newRequestCycle(Request request, Response response) {
-		return new DataRequestCycle(this, (WebRequest) request, response);
-	}
 	
 	/**
 	 * Returns true if development mode is enabled. Override for other behavior.
@@ -183,5 +173,12 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 	 */
 	protected boolean isDataBrowserAllowed() {
 		return isDevelopment();
+	}
+	
+	private static class DataRequestCycleProvider implements IRequestCycleProvider {
+
+		public RequestCycle get(RequestCycleContext context) {
+			return new DataRequestCycle(context);
+		}
 	}
 }

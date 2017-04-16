@@ -25,17 +25,17 @@ package net.databinder.hib;
 
 import java.util.HashSet;
 
-import net.databinder.CookieRequestCycle;
-
-import org.apache.wicket.Page;
-import org.apache.wicket.Response;
-import org.apache.wicket.protocol.http.WebApplication;
-import org.apache.wicket.protocol.http.WebRequest;
+import org.apache.wicket.request.IRequestHandler;
+import org.apache.wicket.request.cycle.AbstractRequestCycleListener;
+import org.apache.wicket.request.cycle.RequestCycle;
+import org.apache.wicket.request.cycle.RequestCycleContext;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.context.ManagedSessionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import net.databinder.CookieRequestCycle;
 
 /**
  * <p>Opens Hibernate sessions and transactions as required and closes them at a request's
@@ -45,15 +45,17 @@ import org.slf4j.LoggerFactory;
  * @author Nathan Hamblen
  */
 public class DataRequestCycle extends CookieRequestCycle implements HibernateRequestCycle {
-	
+
 	/** Keys for session factories that have been opened for this request */ 
 	protected HashSet<Object> keys = new HashSet<Object>();
 
 	private static final Logger log = LoggerFactory.getLogger(DataRequestCycle.class);
 
-	public DataRequestCycle(WebApplication application, WebRequest request, Response response) {
-		super(application, request, response);
+	public DataRequestCycle(RequestCycleContext context) {
+		super(context);
+		this.getListeners().add(new ExceptionListener());
 	}
+	
 
 	/** Roll back active transactions and close session. */
 	protected void closeSession(Object key) {
@@ -106,16 +108,22 @@ public class DataRequestCycle extends CookieRequestCycle implements HibernateReq
 			}
 		}
 	}
-
-	/** 
-	 * Closes and reopens sessions for this request cycle. Unrelated models may try to load 
-	 * themselves after this point. 
-	 */
-	@Override
-	public Page onRuntimeException(Page page, RuntimeException e) {
-		onEndRequest();
-		onBeginRequest();
-		return null;
+	
+	public static class ExceptionListener extends AbstractRequestCycleListener {
+		/** 
+		 * Closes and reopens sessions for this request cycle. Unrelated models may try to load 
+		 * themselves after this point. 
+		 */
+		// TODO [migration]: test!
+		@Override
+		public IRequestHandler onException(RequestCycle cycle, Exception ex) {
+			if(cycle instanceof DataRequestCycle){
+				DataRequestCycle dataRequestCycle = (DataRequestCycle) cycle;
+				dataRequestCycle.onEndRequest();
+				dataRequestCycle.onBeginRequest();
+			}
+			return null;
+		}
 	}
-
+	
 }

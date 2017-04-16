@@ -18,6 +18,10 @@
  */
 package net.databinder.auth.hib;
 
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.protocol.http.WebApplication;
+import org.apache.wicket.request.Request;
+
 /**
  * Holds DataUser identifier for signed in users. Remembering the user with a browser cookie
  * allows that user to bypass login for the length of time specified in getSignInCookieMaxAge().
@@ -28,10 +32,6 @@ package net.databinder.auth.hib;
 import net.databinder.auth.AuthDataSessionBase;
 import net.databinder.auth.data.DataUser;
 import net.databinder.models.hib.HibernateObjectModel;
-
-import org.apache.wicket.Request;
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.protocol.http.WebApplication;
 
 /** Session to hold DataUser. */
 public class AuthDataSession extends AuthDataSessionBase {
