@@ -161,14 +161,15 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 	/**
 	 * It should not normally be necessary to override (or call) this default implementation.
 	 */
-	@SuppressWarnings("unchecked")
-	public Iterator<T> iterator(int first, int count) {
+	@Override
+	@SuppressWarnings("unchecked") // TODO [migration]: add checked conversion
+	public Iterator<? extends T> iterator(long first, long count) {
 		Session sess =  Databinder.getHibernateSession(factoryKey);
 		
 		if(queryBuilder != null) {
 			org.hibernate.Query q = queryBuilder.build(sess);
-			q.setFirstResult(first);
-			q.setMaxResults(count);
+			q.setFirstResult((int)first);
+			q.setMaxResults((int)count);
 			return q.iterate();
 		}			
 		
@@ -176,8 +177,8 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 		if (criteriaBuilder != null)
 			criteriaBuilder.buildOrdered(crit);
 		
-		crit.setFirstResult(first);
-		crit.setMaxResults(count);
+		crit.setFirstResult((int)first);
+		crit.setMaxResults((int)count);
 		return crit.list().iterator();
 	}
 	
@@ -211,11 +212,5 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 	
 	/** does nothing */
 	public void detach() {
-	}
-
-	@Override
-	public Iterator<? extends T> iterator(long first, long count) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }
