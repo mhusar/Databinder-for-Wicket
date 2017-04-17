@@ -47,9 +47,10 @@ public class ObjectFilteredPropertyColumn<T, Y> extends ChoiceFilteredPropertyCo
 	protected IChoiceRenderer<Y> getChoiceRenderer() {
 		return choiceRenderer;
 	}
-
-	protected IModel createLabelModel(IModel embeddedModel) {
-		return new PropertyModel(embeddedModel, displayProperty);
+	
+	@Override
+	public IModel<?> getDataModel(IModel<T> rowModel) {
+		return new PropertyModel(rowModel, displayProperty);
 	}
 
 	public Component getFilter(String componentId, FilterForm form) {
