@@ -60,6 +60,7 @@ import org.hibernate.criterion.Restrictions;
  * 
  * @author Mark Southern
  */
+// TODO [migration]: try to make work with ObjectFilteredPropertyColumn.
 public class CriteriaFilterAndSort extends CriteriaBuildAndSort implements IFilterStateLocator {
 
     // whitespace, a qualifier, a number surrounded by whitespace
