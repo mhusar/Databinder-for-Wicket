@@ -74,10 +74,8 @@ public class DataConversationRequestCycle extends DataRequestCycle {
 		
 		IPageRequestHandler handler = PageRequestHandlerTracker.getLastHandler(RequestCycle.get());
 		if (handler == null){
-			System.err.println("handler is null");
 			return;
 		}
-		System.out.println(handler);
 		Page page = (Page) handler.getPage();
 		
 		if (page == null) {
