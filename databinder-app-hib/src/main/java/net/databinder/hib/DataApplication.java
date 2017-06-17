@@ -175,10 +175,19 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 		return isDevelopment();
 	}
 	
-	private static class DataRequestCycleProvider implements IRequestCycleProvider {
+	protected class DataRequestCycleProvider implements IRequestCycleProvider {
 
 		public RequestCycle get(RequestCycleContext context) {
-			return new DataRequestCycle(context);
+			return DataApplication.this.newRequestCycle(context);
 		}
+	}
+	
+	/**
+	 * Called by the DataRequestCycleProvider.
+	 * Returns new DataRequestCycle.
+	 * Override for a different request cycle.
+	 */
+	protected RequestCycle newRequestCycle(RequestCycleContext context) {
+		return new DataRequestCycle(context);
 	}
 }
