@@ -18,14 +18,14 @@
  */
 package net.databinder.components.hib;
 
-import java.io.IOException;
 import java.sql.Blob;
-
-import org.hibernate.Hibernate;
 
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.upload.FileUploadField;
 import org.apache.wicket.model.IModel;
+import org.hibernate.Hibernate;
+
+import net.databinder.hib.Databinder;
 
 /**
  * Extension of FileUploadField optimized for blob resources. This upload field can be 
@@ -60,14 +60,11 @@ public class BlobUploadField extends FormComponentPanel<Blob> {
 	 */
 	@Override
 	public void updateModel() {
-		try {
-			if (uploadField.getFileUpload() != null) {
-				setModelObject(Hibernate.createBlob(
-					uploadField.getFileUpload().getInputStream()));
-				onUpdated();
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		if (uploadField.getFileUpload() != null) {
+			// TODO [migration] Test this
+			setModelObject(Hibernate.getLobCreator(Databinder.getHibernateSession())
+					.createBlob(uploadField.getFileUpload().getBytes()));
+			onUpdated();
 		}
 	}
 	protected void onUpdated() { }

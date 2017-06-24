@@ -4,7 +4,7 @@ package net.databinder.hib.conv.components;
 import java.util.HashMap;
 
 import org.apache.wicket.markup.html.WebPage;
-import org.hibernate.classic.Session;
+import org.hibernate.Session;
 
 public class ConversationPage extends WebPage implements IConversationPage {
 	private HashMap<Object, Session> conversationSessions = new HashMap<Object, Session>();

@@ -36,7 +36,7 @@ import org.apache.wicket.request.Request;
 import org.apache.wicket.request.Response;
 import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.util.crypt.Base64;
-import org.hibernate.cfg.AnnotationConfiguration;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Restrictions;
 
 import net.databinder.auth.AuthApplication;
@@ -95,7 +95,7 @@ implements IUnauthorizedComponentInstantiationListener, IRoleCheckingStrategy, A
 	 * Adds to the configuration whatever DataUser class is defined.
 	 */
 	@Override
-	protected void configureHibernate(AnnotationConfiguration config) {
+	protected void configureHibernate(Configuration config) {
 		super.configureHibernate(config);
 		config.addAnnotatedClass(getUserClass());
 	}

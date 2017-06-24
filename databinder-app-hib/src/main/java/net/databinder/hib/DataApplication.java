@@ -27,7 +27,7 @@ import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.request.cycle.RequestCycleContext;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.AnnotationConfiguration;
+import org.hibernate.cfg.Configuration;
 
 import net.databinder.DataApplicationBase;
 import net.databinder.components.hib.DataBrowser;
@@ -80,12 +80,12 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 
 	/**
 	 * Called by init to create Hibernate session factory and load a configuration. Passes
-	 * an empty new AnnotationConfiguration to buildHibernateSessionFactory(key, config) by 
+	 * an empty new Configuration to buildHibernateSessionFactory(key, config) by 
 	 * default. Override if creating a configuration externally.
 	 * @param key session factory key; the default key is null
 	 */
 	public void buildHibernateSessionFactory(Object key) {
-		buildHibernateSessionFactory(key, new AnnotationConfiguration());
+		buildHibernateSessionFactory(key, new Configuration());
 	}
 	
 	/**
@@ -93,10 +93,10 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 	 * through configureHibernate methods.
 	 * @param key session factory key; the default key is null
 	 * @param config annotation conifuration
-	 * @see #configureHibernateEssentials(AnnotationConfiguration)
-	 * @see #configureHibernate(AnnotationConfiguration, Object) 
+	 * @see #configureHibernateEssentials(Configuration)
+	 * @see #configureHibernate(Configuration, Object) 
 	 */
-	final public void buildHibernateSessionFactory(Object key, AnnotationConfiguration config) {
+	final public void buildHibernateSessionFactory(Object key, Configuration config) {
 		configureHibernateEssentials(config);
 		configureHibernate(config, key);
 		setHibernateSessionFactory(key, config.buildSessionFactory());
@@ -110,7 +110,7 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 	 * @param config configuration to update
 	 * @param key object, or null for the default factory
 	 */
-	protected	void configureHibernate(AnnotationConfiguration config, Object key) {
+	protected	void configureHibernate(Configuration config, Object key) {
 		configureHibernate(config);
 	}
 	
@@ -120,7 +120,7 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 	 * the session lookup method used by DataRequestCycle.
 	 * @param config Hibernate configuration
 	 */
-	protected void configureHibernateEssentials(AnnotationConfiguration config) {
+	protected void configureHibernateEssentials(Configuration config) {
 		config.setProperty("hibernate.current_session_context_class","managed");
 	}
 		
@@ -132,7 +132,7 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 	 * as required. For deployment it is configured for C3P0 connection pooling.
 	 * @param config used to build Hibernate session factory
 	 */
-	protected	void configureHibernate(AnnotationConfiguration config) {
+	protected	void configureHibernate(Configuration config) {
 			if (isDevelopment())
 				config.setProperty("hibernate.hbm2ddl.auto", "update");
 			else {
