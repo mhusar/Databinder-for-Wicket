@@ -110,7 +110,7 @@ public class DataConversationRequestCycle extends DataRequestCycle {
 			}
 			// else start new one and set in page
 			sess = openHibernateSession(key);
-			sess.setFlushMode(FlushMode.MANUAL);
+			sess.setHibernateFlushMode(FlushMode.MANUAL);
 			((IConversationPage)page).setConversationSession(key, sess);
 			return;
 		}
@@ -128,12 +128,14 @@ public class DataConversationRequestCycle extends DataRequestCycle {
 			if (!ManagedSessionContext.hasBind(Databinder.getHibernateSessionFactory(key)))
 				return;
 			org.hibernate.Session sess = Databinder.getHibernateSession(key);
+			debugSession(sess, "onEndRequest1");
 			boolean transactionComitted = false;
 			if (sess.getTransaction().isActive())
 				sess.getTransaction().rollback();
 			else
 				transactionComitted = true;
 			
+			debugSession(sess, "onEndRequest2");
 			Page page = getResponsePage() ;
 			
 			if (page != null) {
@@ -151,6 +153,12 @@ public class DataConversationRequestCycle extends DataRequestCycle {
 			}		
 			ManagedSessionContext.unbind(Databinder.getHibernateSessionFactory(key));
 		}
+	}
+
+	private void debugSession(org.hibernate.Session sess, String where) {
+		System.out.println(where);
+		System.out.println(sess.getStatistics().getEntityKeys());
+		System.out.println("hashCode: " + System.identityHashCode(sess));
 	}
 
 	/** 
