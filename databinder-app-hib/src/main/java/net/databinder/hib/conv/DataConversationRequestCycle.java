@@ -79,8 +79,8 @@ public class DataConversationRequestCycle extends DataRequestCycle {
 		Page page = (Page) handler.getPage();
 		
 		if (page == null) {
-			System.err.println("page is null");
 			// TODO [migration]
+			throw new IllegalStateException("[migration] Page is null. Refactor.");
 //			Class pageClass = getResponsePageClass(); 
 //			if (pageClass != null) {
 //				openHibernateSession(key);
@@ -88,14 +88,14 @@ public class DataConversationRequestCycle extends DataRequestCycle {
 //				if (IConversationPage.class.isAssignableFrom(pageClass))
 //					Databinder.getHibernateSession(key).setFlushMode(FlushMode.MANUAL);
 //			}
-			return;
+//			return;
 		}
 
 		// if continuing a conversation page
 		if (page instanceof  IConversationPage) {
 			// look for existing session
 			IConversationPage convPage = (IConversationPage) page;
-			org.hibernate.Session sess = convPage.getConversationSession(key);
+			Session sess = convPage.getConversationSession(key);
 			
 			// if usable session exists, try to open txn, bind, and return
 			if (sess != null && sess.isOpen()) {
@@ -127,15 +127,15 @@ public class DataConversationRequestCycle extends DataRequestCycle {
 		for (Object key : keys) {
 			if (!ManagedSessionContext.hasBind(Databinder.getHibernateSessionFactory(key)))
 				return;
-			org.hibernate.Session sess = Databinder.getHibernateSession(key);
-			debugSession(sess, "onEndRequest1");
+			Session sess = Databinder.getHibernateSession(key);
 			boolean transactionComitted = false;
-			if (sess.getTransaction().isActive())
-				sess.getTransaction().rollback();
-			else
+			if (sess.getTransaction().isActive()) {
+				sess.getTransaction().commit();
+			}
+			else {
 				transactionComitted = true;
+			}
 			
-			debugSession(sess, "onEndRequest2");
 			Page page = getResponsePage() ;
 			
 			if (page != null) {
@@ -151,14 +151,10 @@ public class DataConversationRequestCycle extends DataRequestCycle {
 				} else
 					sess.close();
 			}		
+			// disconnect and unbind
+			sess.disconnect();
 			ManagedSessionContext.unbind(Databinder.getHibernateSessionFactory(key));
 		}
-	}
-
-	private void debugSession(org.hibernate.Session sess, String where) {
-		System.out.println(where);
-		System.out.println(sess.getStatistics().getEntityKeys());
-		System.out.println("hashCode: " + System.identityHashCode(sess));
 	}
 
 	/** 
