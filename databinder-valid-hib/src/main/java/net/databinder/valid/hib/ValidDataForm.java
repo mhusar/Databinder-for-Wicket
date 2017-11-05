@@ -19,17 +19,22 @@
 package net.databinder.valid.hib;
 
 import java.io.Serializable;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+
+import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.util.visit.IVisit;
+import org.apache.wicket.util.visit.IVisitor;
+import org.apache.wicket.validation.IValidatable;
+import org.apache.wicket.validation.IValidator;
 
 import net.databinder.components.hib.DataForm;
 import net.databinder.models.hib.HibernateObjectModel;
 import net.databinder.valid.hib.DatabinderValidator.UnrecognizedModelException;
-
-import org.apache.wicket.markup.html.form.FormComponent;
-import org.apache.wicket.validation.IValidatable;
-import org.apache.wicket.validation.IValidator;
-import org.hibernate.Hibernate;
-import org.hibernate.validator.ClassValidator;
-import org.hibernate.validator.InvalidValue;
 
 /**
  * Form that adds a {@link DatabinderValidator} to all its components that
@@ -42,11 +47,12 @@ import org.hibernate.validator.InvalidValue;
  * @author Rodolfo Hansen
  * @param <T> the model object type
  * @see DatabinderValidator
+ * @deprecated Use wicket-bean-validation project instead
  */
 public class ValidDataForm<T> extends DataForm<T> {
 
   /** Hibernate Validator to use. */
-  private final ClassValidator<T> validator;
+  private Validator validator;
 
 	/** */
   private static final long serialVersionUID = 1L;
@@ -60,23 +66,13 @@ public class ValidDataForm<T> extends DataForm<T> {
 	 * @see HibernateObjectModel#setRetainUnsaved(boolean)
 	 */
 	public ValidDataForm(final String id, final Class<T> modelClass) {
-		this(id, modelClass, new ClassValidator<T>(modelClass));
-	}
-
-	public ValidDataForm(final String id, final Class<T> modelClass, final ClassValidator<T> validator) {
     super(id, modelClass);
-    this.validator = validator;
   }
 
 	public ValidDataForm(final String id, final HibernateObjectModel<T> model) {
 		super(id, model);
-		this.validator = null;
 	}
 
-	public ValidDataForm(final String id, final HibernateObjectModel<T> model, final ClassValidator<T> validator) {
-    super(id, model);
-    this.validator = validator;
-  }
 
 	/**
 	 * Instantiates this form with a persistent object of the given class and id.
@@ -85,20 +81,9 @@ public class ValidDataForm<T> extends DataForm<T> {
 	 * @param persistentObjectId id of the persistent object
 	 */
 	public ValidDataForm(final String id, final Class<T> modelClass, final Serializable persistentObjectId) {
-		this(id, modelClass, persistentObjectId, new ClassValidator<T>(modelClass));
+		super(id, modelClass, persistentObjectId);
 	}
 
-	/**
-	 * Instantiates this form with a persistent object of the given class and id.
-   * @param id Wicket id
-   * @param modelClass for the persistent object
-   * @param persistentObjectId id of the persistent object
-	 * @param validator ClassValidator to use
-   */
-  public ValidDataForm(final String id, final Class<T> modelClass, final Serializable persistentObjectId, final ClassValidator<T> validator) {
-    super(id, modelClass, persistentObjectId);
-    this.validator = validator;
-  }
 
 	/**
 	 * Form that is nested below a component with a compound model containing a Hibernate
@@ -107,30 +92,20 @@ public class ValidDataForm<T> extends DataForm<T> {
 	 */
 	public ValidDataForm(final String id) {
 		super(id);
-		this.validator = null;
 	}
 
-	 /**
-   * Form that is nested below a component with a compound model containing a Hibernate
-   * model.
-   * @param id wicket:id
-	 * @param validator ClassValidator to use
-   */
-  public ValidDataForm(final String id, final ClassValidator<T> validator) {
-    super(id);
-    this.validator = validator;
-  }
 
-	@SuppressWarnings("unchecked")
 	protected void validateModelObject() {
 		final T o = getPersistentObjectModel().getObject();
-		ClassValidator<T> v = validator == null
-		    ?  v = new ClassValidator(Hibernate.getClass(o))
-        : validator;
-		for (final InvalidValue iv : v.getInvalidValues(o)) {
-      error(iv.getPropertyName() + " " + iv.getMessage());
-    }
+		// TODO [migration]: don't buildDefaultValidatorFactory on every validate; see wicket-bean-validation project -> DefaultValidatorProvider  
+		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+		Validator v = validator == null ? factory.getValidator() : validator;
+		Set<ConstraintViolation<T>> constraintViolations = v.validate(o);
+		for (ConstraintViolation<T> cv : constraintViolations) {
+			error(cv.getMessage());
+		}
 	}
+	
 
 	/**
 	 * Add a validator to any form components that have no existing validator
@@ -139,18 +114,20 @@ public class ValidDataForm<T> extends DataForm<T> {
 	@Override
 	protected void onBeforeRender() {
 		super.onBeforeRender();
-		visitFormComponents(new FormComponent.AbstractVisitor() {
-			@Override
-			protected void onFormComponent(final FormComponent<?> formComponent) {
+		visitFormComponents(new IVisitor<FormComponent<?>, Void>() {
+
+			public void component(FormComponent<?> formComponent, IVisit<Void> visit) {
 				if (formComponent.getValidators().isEmpty()) {
-          try {
-          	DatabinderValidator.addTo(formComponent, validator);
-          } catch (final UnrecognizedModelException e) { }
-        }
+					try {
+						DatabinderValidator.addTo(formComponent, validator);
+					} catch (final UnrecognizedModelException e) {
+						// empty
+					}
+				}
 			}
 		});
 	}
-
+	
 	/**
 	 * @return dummy validator that can be used to exempt a component
 	 * from this form's inspection in {@link #onBeforeRender()}

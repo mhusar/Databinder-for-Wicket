@@ -18,31 +18,33 @@
  */
 package net.databinder.valid.hib;
 
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import org.apache.wicket.Component;
+import org.apache.wicket.behavior.Behavior;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.IWrapModel;
 import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.validation.INullAcceptingValidator;
 import org.apache.wicket.validation.IValidatable;
-import org.apache.wicket.validation.IValidatorAddListener;
 import org.apache.wicket.validation.ValidationError;
-import org.apache.wicket.validation.validator.AbstractValidator;
-import org.hibernate.Hibernate;
-import org.hibernate.validator.ClassValidator;
-import org.hibernate.validator.InvalidValue;
 
 /**
- * Checks a base model and property name against Hibernate Validator.
+ * Checks a base model and property name against javax Validator.
  * @author Nathan Hamblen
  * @author Rodolfo Hansen
+ * @author Conny Kuehne
  *
  * @param <T> Type parameter for the validator.
+ * @deprecated Use wicket-bean-validation project instead
  */
-public class DatabinderValidator<T> extends AbstractValidator<T> implements IValidatorAddListener {
+public class DatabinderValidator<T>  extends Behavior implements INullAcceptingValidator<T> {
   private static final long serialVersionUID = 1L;
-
-  /** Hibernate ClassValidator to use. */
-  private ClassValidator<?> validator;
 
   /** base model, may be null until first call to onValidate. */
 	private IModel<T> base;
@@ -50,18 +52,6 @@ public class DatabinderValidator<T> extends AbstractValidator<T> implements IVal
 	private String property;
 	/** component added to */
 	private FormComponent<T> component;
-
-	/**
-	 * Validator for a property of an entity.
-	 * @param base entity to validate
-	 * @param property property of base to validate
-	 * @param validator validator to validate with
-	 */
-	public DatabinderValidator(final IModel<T> base, final String property, final ClassValidator<?> validator) {
-	  this.base = base;
-	  this.property = property;
-	  this.validator = validator;
-	}
 
 	/**
 	 * Validator for a property of an entity.
@@ -84,57 +74,36 @@ public class DatabinderValidator<T> extends AbstractValidator<T> implements IVal
 	 */
 	public DatabinderValidator() { }
 
-	/** Gets the <tt>validator</tt>.
-   * @return the validator
-   */
-  public ClassValidator<?> getValidator() {
-    return validator;
-  }
-
-  /** Sets the <tt>validator</tt>.
-   * @param validator the validator to set
-   * @return the DatabinderValidator object (builder ideology).
-   */
-  public DatabinderValidator<?> setValidator(final ClassValidator<T> validator) {
-    this.validator = validator;
-    return this;
-  }
-
 	/**
-	 * Checks the component against Hibernate Validator. If the base model
-	 * and property were not supplied in the constructor, they will be determined
-	 * from the component this validator was added to.
+	 * Checks the component against Hibernate Validator. If the base model and property were not supplied in the
+	 * constructor, they will be determined from the component this validator was added to.
 	 */
 	@SuppressWarnings("unchecked")
-	@Override
-	protected void onValidate(final IValidatable comp) {
+	public void validate(final IValidatable<T> comp) {
 		if (base == null || property == null) {
-			final ModelProp mp = getModelProp(component);
+			final ModelProp<T> mp = getModelProp(component);
 			base = mp.model;
 			property = mp.prop;
 		}
-		final Object o  = base.getObject();
-		if (validator == null) {
-		  final Class c = Hibernate.getClass(o);
-		  validator = new ClassValidator(c);
+		final T t = base.getObject();
+		if (t==null)
+			return;
+		// TODO [migration]: avoid calling buildDefaultValidatorFactory often; see wicket-bean-validation project -> DefaultValidatorProvider
+		Set<?> constraintViolations = Validation.buildDefaultValidatorFactory().getValidator().validateValue(t.getClass(), property, comp.getValue());
+		
+		for (ConstraintViolation<?> cv : (Set<ConstraintViolation<?>>) constraintViolations) {
+			// TODO [migration]: try messageTemplate, e.g., javax.validation.constraints.NotNull.message
+			comp.error(new ValidationError().setMessage(cv.getPropertyPath().toString() + " " + cv.getMessage()));
 		}
-		for (final InvalidValue iv : validator.getPotentialInvalidValues(property, comp.getValue())) {
-      comp.error(new ValidationError().setMessage(iv.getPropertyName() + " " + iv.getMessage()));
-    }
-	}
 
+	}
+	
 	/** Retains component for possible use in onValidate.
 	 * @param component component assigned to this validator. */
-	@SuppressWarnings("unchecked")
-  public void onAdded(final Component component) {
-		this.component = (FormComponent<T>) component;
-	}
-
-	/** @return always true */
 	@Override
-	public boolean validateOnNullValue() {
-		return true;
-	}
+		public void bind(Component component) {
+			this.component = (FormComponent<T>) component;
+		}
 
 	private static class ModelProp<T> { IModel<T> model; String prop; }
 
@@ -171,7 +140,7 @@ public class DatabinderValidator<T> extends AbstractValidator<T> implements IVal
 		formComponent.add(new DatabinderValidator<T>(mp.model, mp.prop));
 	}
 
-	 /**
+	/**
    * Add immediately to a form component. Note that the component's model
    * object must be available for inspection at this point or an exception will
    * be thrown. (For a CompoundPropertyModel, this means the hierarchy must
@@ -182,9 +151,9 @@ public class DatabinderValidator<T> extends AbstractValidator<T> implements IVal
 	 * @param validator ClassValidator for the newly asigned instance
    * @throws UnrecognizedModelException if no usable model is present
    */
-  public static <T> void addTo(final FormComponent<T> formComponent, final ClassValidator<?> validator) {
+  public static <T> void addTo(final FormComponent<T> formComponent, final Validator validator) {
     final ModelProp<T> mp = getModelProp(formComponent);
-    formComponent.add(new DatabinderValidator<T>(mp.model, mp.prop, validator));
+    formComponent.add(new DatabinderValidator<T>(mp.model, mp.prop));
   }
 
 	public static class UnrecognizedModelException extends RuntimeException {
