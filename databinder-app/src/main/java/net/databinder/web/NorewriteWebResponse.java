@@ -39,21 +39,23 @@ public class NorewriteWebResponse {
 	public static WebResponse getNew(Application app, final WebRequest webRequest,
 			final HttpServletResponse httpServletResponse) {
 		// TODO [migration]: does unbuffered case work?
-		return app.getRequestCycleSettings().getBufferResponse() ? new Buffered(httpServletResponse)
-				: new ServletWebResponse((ServletWebRequest) webRequest, httpServletResponse);
+		return app.getRequestCycleSettings().getBufferResponse() ? 
+				new Buffered(webRequest, httpServletResponse) : 
+				new ServletWebResponse((ServletWebRequest) webRequest, httpServletResponse);
 	}
 	
 	static class Buffered extends BufferedWebResponse {
-		public Buffered(final HttpServletResponse httpServletResponse) {
-			// TODO [migration]: check if cast works
-			super((WebResponse) httpServletResponse); 
+		public Buffered(final WebRequest webRequest, final HttpServletResponse httpServletResponse) {
+			// TODO [migration]: does this work?
+			super(new ServletWebResponse((ServletWebRequest) webRequest, httpServletResponse));
 		}
+
 		@Override
 		public String encodeURL(CharSequence url) {
 			return url.toString();
 		}
 	}
-
+	// FIXME [migration]
 //	static class Unbuffered extends WebResponse {
 //		public Unbuffered(final HttpServletResponse httpServletResponse)
 //		{ 
