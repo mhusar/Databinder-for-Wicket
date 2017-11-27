@@ -25,14 +25,12 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Locale;
 
 import javax.crypto.Cipher;
 
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.behavior.AttributeAppender;
-import org.apache.wicket.markup.ComponentTag;
-import org.apache.wicket.markup.MarkupStream;
-import org.apache.wicket.markup.head.HeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.IHeaderContributor;
@@ -41,10 +39,9 @@ import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.request.Response;
 import org.apache.wicket.request.resource.PackageResourceReference;
-import org.apache.wicket.request.resource.ResourceReference;
 import org.apache.wicket.util.convert.ConversionException;
+import org.apache.wicket.util.convert.IConverter;
 import org.apache.wicket.util.crypt.Base64;
 
 import net.databinder.auth.valid.EqualPasswordConvertedInputValidator;
@@ -82,12 +79,12 @@ public class RSAPasswordTextField extends PasswordTextField implements IHeaderCo
 		super(id, model);
 		init(form);
 	}
+	
 	@Override
-	public void onComponentTagBody(MarkupStream markupStream, ComponentTag openTag)  {
-		// TODO [migration]: This probably won't work. We'll fix it later.
+	protected void onAfterRender() {
 		getResponse().write("<noscript><div style='color: red;'>Please enable JavaScript and reload this page.</div></noscript>");
-		super.onComponentTagBody(markupStream, openTag);
 		getResponse().write("<script>document.getElementById('" + getMarkupId() + "').style.visibility='visible';</script>");
+		super.onAfterRender();
 	}
 	
 	protected void init(Form form) {
@@ -120,23 +117,35 @@ public class RSAPasswordTextField extends PasswordTextField implements IHeaderCo
 	}
 	
 	@Override
-	protected String convertValue(String[] value) throws ConversionException {
-		String enc = (String) super.convertValue(value);
-		if (enc == null)
-			return null;
-		try {
-			Cipher rsa = Cipher.getInstance("RSA");
-			rsa.init(Cipher.DECRYPT_MODE, keypair.getPrivate());
-			String dec = new String(rsa.doFinal(hex2data(enc)));
-			
-			String[] toks = dec.split("\\|", 2);
-			if (toks.length != 2 || !toks[0].equals(challenge))
-				throw new ConversionException("incorrect or empy challenge value").setResourceKey("RSAPasswordTextField.failed.challenge");
+	public IConverter<String> getConverter(Class type) {
+		return new IConverter<String>() {
+			private static final long serialVersionUID = 1L;
 
-			return toks[1];
-		} catch (GeneralSecurityException e) {
-			throw new ConversionException(e).setResourceKey("RSAPasswordTextField.failed.challenge");
-		}
+			@Override
+			public String convertToObject(String value, Locale locale) throws ConversionException {
+				String enc = value;
+				if (enc == null)
+					return null;
+				try {
+					Cipher rsa = Cipher.getInstance("RSA");
+					rsa.init(Cipher.DECRYPT_MODE, keypair.getPrivate());
+					String dec = new String(rsa.doFinal(hex2data(enc)));
+					
+					String[] toks = dec.split("\\|", 2);
+					if (toks.length != 2 || !toks[0].equals(challenge))
+						throw new ConversionException("incorrect or empy challenge value").setResourceKey("RSAPasswordTextField.failed.challenge");
+
+					return toks[1];
+				} catch (GeneralSecurityException e) {
+					throw new ConversionException(e).setResourceKey("RSAPasswordTextField.failed.challenge");
+				}
+			}
+
+			@Override
+			public java.lang.String convertToString(java.lang.String value, Locale locale) {
+				return value;
+			}
+		};
 	}
 	
 	public void renderHead(IHeaderResponse response) {
@@ -154,7 +163,6 @@ public class RSAPasswordTextField extends PasswordTextField implements IHeaderCo
 			.append("', '', '")
 			.append(pub.getModulus().toString(16))
 			.append("');");
-//		response.renderJavascript(keyBuf.toString(), "rsa_key");
 		response.render(JavaScriptHeaderItem.forScript(keyBuf.toString(), "rsa_key"));
 		
 		// the challenge is unique per component instance, send for every component
@@ -165,7 +173,6 @@ public class RSAPasswordTextField extends PasswordTextField implements IHeaderCo
 			.append(" = '")
 			.append(challenge)
 			.append("';");
-//		response.renderJavascript(chalBuf.toString(), null);
 		response.render(JavaScriptHeaderItem.forScript(chalBuf.toString(), null));
 	}
 	
