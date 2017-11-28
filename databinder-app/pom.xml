@@ -15,10 +15,10 @@
    <artifactId>databinder-auth-components</artifactId>
   </dependency>
   <dependency>
-   <groupId>org.mortbay.jetty</groupId>
-   <artifactId>jetty-ajp</artifactId>
-   <version>[6.1,6.2)</version>
-   <optional>true</optional>
+   <groupId>javax.servlet</groupId>
+   <artifactId>javax.servlet-api</artifactId>
+   <version>3.0.1</version>
+   <scope>provided</scope>
   </dependency>
  </dependencies>
 </project>
