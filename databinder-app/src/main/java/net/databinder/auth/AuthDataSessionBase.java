@@ -82,12 +82,29 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
 	public abstract IModel<T> createUserModel(T user);
 
 	/**
-	 * @return length of time sign-in cookie should persist, defined here as one month
+	 * @return length of time sign-in cookies should persist, defined here as one month
+	 * @see Cookie#setMaxAge(int)
 	 */
 	protected Duration getSignInCookieMaxAge() {
 		return Duration.days(31);
 	}
 	
+	/**
+	 * @return whether the sign-in cookies should be http only
+	 * @see Cookie#setHttpOnly(boolean)
+	 */
+	protected boolean isSignInHttpOnly() {
+		return true;
+	}
+
+	/**
+	 * @return whether the sign-in cookies should be secure cookies
+	 * @see Cookie#setSecure(boolean)
+	 */
+	protected boolean isSignInSecure() {
+		return true;
+	}
+
 	/**
 	 * Determine if user is signed in, or can be via cookie.
 	 * @return true if signed in or cookie sign in is possible and successful
@@ -195,9 +212,8 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
 			throw new WicketRuntimeException(e);
 		}
 		
-		int  maxAge = (int) getSignInCookieMaxAge().seconds();
-		name.setMaxAge(maxAge);
-		auth.setMaxAge(maxAge);
+		configureSignInCookie(name);
+		configureSignInCookie(auth);
 
 		RequestCycle rc = RequestCycle.get();
 		if (rc instanceof CookieRequestCycle) {
@@ -208,6 +224,12 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
 		
 		resp.addCookie(name);
 		resp.addCookie(auth);
+	}
+
+	private void configureSignInCookie(Cookie auth) {
+		auth.setMaxAge((int) getSignInCookieMaxAge().seconds());
+		auth.setHttpOnly(isSignInHttpOnly());
+		auth.setSecure(isSignInSecure());
 	}
 	
 	/**
