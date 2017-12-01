@@ -147,11 +147,11 @@ implements IUnauthorizedComponentInstantiationListener, IRoleCheckingStrategy, A
 	 */
 	public MessageDigest getDigest() {
 		try {
-			MessageDigest digest = MessageDigest.getInstance("SHA");
+			MessageDigest digest = MessageDigest.getInstance("SHA-512");
 			digest.update(getSalt());
 			return digest;
 		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException("SHA Hash algorithm not found.", e);
+			throw new RuntimeException("SHA-512 Hash algorithm not found.", e);
 		}
 	}
 
