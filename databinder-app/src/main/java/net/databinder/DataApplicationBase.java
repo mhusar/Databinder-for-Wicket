@@ -21,28 +21,18 @@ package net.databinder;
 import java.awt.Color;
 import java.net.URI;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.wicket.ConverterLocator;
 import org.apache.wicket.IConverterLocator;
 import org.apache.wicket.IRequestCycleProvider;
-import org.apache.wicket.Page;
-import org.apache.wicket.markup.html.pages.PageExpiredErrorPage;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.request.cycle.RequestCycleContext;
-import org.apache.wicket.request.http.WebRequest;
-import org.apache.wicket.request.http.WebResponse;
 
-import net.databinder.components.PageExpiredCookieless;
 import net.databinder.converters.ColorConverter;
 import net.databinder.converters.URIConverter;
-import net.databinder.web.NorewriteWebResponse;
 
 /** Common functionality for Databinder applications. */
 public abstract class DataApplicationBase extends WebApplication {
-	/** true if cookieless use is supported through URL rewriting(defaults to true). */
-	private boolean cookielessSupported = true;
 
 	/**
 	 * Internal initialization. Client applications should not normally override
@@ -67,51 +57,6 @@ public abstract class DataApplicationBase extends WebApplication {
 		converterLocator.set(URI.class, new URIConverter());
 		converterLocator.set(Color.class, new ColorConverter());
 		return converterLocator;
-	}
-	
-	/**
-	 * If <code>isCookielessSupported()</code> returns false, this method returns
-	 * a custom WebResponse that disables URL rewriting.
-	 */
-	@Override
-	protected WebResponse newWebResponse(WebRequest webRequest, HttpServletResponse httpServletResponse) {
-		if (isCookielessSupported()){
-			return super.newWebResponse(webRequest, httpServletResponse);
-		}
-		return NorewriteWebResponse.getNew(this, webRequest, httpServletResponse);	
-	}
-	
-	/**
-	 * @return  true if cookieless use is supported through URL rewriting.
-	 */
-	public boolean isCookielessSupported() {
-		return cookielessSupported;
-	}
-
-	/**
-	 * Set to false to disable URL rewriting and consequentally hamper cookieless 
-	 * browsing.  Users with cookies disabled, and more importantly search engines, 
-	 * will still be able to browse the application through bookmarkable URLs. Because
-	 * rewriting is disabled, these URLs will have no jsessionid appended and will 
-	 * remain static.
-	 * <p> The Application's "page expired" error page will be set to PageExpiredCookieless
-	 * if cookielessSupported is false, unless an alternate error page has already been
-	 * specified. This page will appear when cookieless users try to follow a link or 
-	 * form-submit that requires a session, informing them that cookies are required.
-	 * </p>
-	 * @param cookielessSupported  true if cookieless use is supported through 
-	 * URL rewriting
-	 * @see net.databinder.components.PageExpiredCookieless
-	 */
-	protected void setCookielessSupported(boolean cookielessSupported) {
-		Class<? extends Page> expected = this.cookielessSupported ? 
-				PageExpiredErrorPage.class : PageExpiredCookieless.class;
-		
-		this.cookielessSupported = cookielessSupported;
-		
-		if (getApplicationSettings().getPageExpiredErrorPage().equals(expected))
-			getApplicationSettings().setPageExpiredErrorPage(cookielessSupported ?
-					PageExpiredErrorPage.class : PageExpiredCookieless.class);
 	}
 	
 	/**
