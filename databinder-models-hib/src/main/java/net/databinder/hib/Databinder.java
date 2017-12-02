@@ -53,10 +53,7 @@ public class Databinder {
 	 * @see HibernateApplication
 	 */
 	public static SessionFactory getHibernateSessionFactory(Object key) {
-		Application app = Application.get();
-		if (app instanceof HibernateApplication)
-			return ((HibernateApplication)app).getHibernateSessionFactory(key);
-		throw new WicketRuntimeException("Please implement HibernateApplication in your Application subclass.");
+			return getHibernateApplication().getHibernateSessionFactory(key);
 	}
 	
 	/**
@@ -93,14 +90,13 @@ public class Databinder {
 	 * Notifies current request cycle that a data session was requested, if a session factory
 	 * was not already bound for this thread and the request cycle is an DataRequestCycle.
 	 * @param key or null for the default factory
-	 * @see HibernateRequestCycle
+	 * @see HibernateRequestCycleListener
 	 */
 	private static void dataSessionRequested(Object key) {
-		if (!hasBoundSession(key)) {
+		if (!hasBoundSession(key) && inRequestCycle()) {
+			// TODO [migration]: is this comment still true?
 			// if session is unavailable, it could be a late-loaded conversational cycle
-			RequestCycle cycle = RequestCycle.get();
-			if (cycle instanceof HibernateRequestCycle)
-				((HibernateRequestCycle)cycle).dataSessionRequested(key);
+			getHibernateApplication().getHibernateRequestCyleListener().dataSessionRequested(key);
 		}
 	}
 	
@@ -153,5 +149,16 @@ public class Databinder {
 				ManagedSessionContext.unbind(sf);
 			}
 		}
+	}
+	
+	private static HibernateApplication getHibernateApplication() {
+		Application app = Application.get();
+		if (app instanceof HibernateApplication)
+			return (HibernateApplication) app;
+		throw new WicketRuntimeException("Please implement HibernateApplication in your Application subclass.");
+	}
+	
+	private static boolean inRequestCycle() {
+		return RequestCycle.get() != null;
 	}
 }

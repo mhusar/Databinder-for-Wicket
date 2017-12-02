@@ -25,11 +25,8 @@ package net.databinder.hib.conv;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.core.request.handler.IPageRequestHandler;
-import org.apache.wicket.request.IRequestHandler;
-import org.apache.wicket.request.cycle.AbstractRequestCycleListener;
 import org.apache.wicket.request.cycle.PageRequestHandlerTracker;
 import org.apache.wicket.request.cycle.RequestCycle;
-import org.apache.wicket.request.cycle.RequestCycleContext;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -50,18 +47,13 @@ import net.databinder.hib.conv.components.IConversationPage;
  */
 public class DataConversationRequestCycle extends DataRequestCycle {	
 	private static final Logger log = LoggerFactory.getLogger(DataConversationRequestCycle.class);
-
-	public DataConversationRequestCycle(RequestCycleContext context) {
-		super(context);
-		getListeners().add(new ExceptionListener());
-		getListeners().add(new PageRequestHandlerTracker());
-	}
 	
 	/**
 	 * Does nothing; The session is open or retreived only when the request target is known.
 	 */
 	@Override
 	protected void onBeginRequest() {
+		// NOOP
 	}
 	
 	/**
@@ -70,6 +62,7 @@ public class DataConversationRequestCycle extends DataRequestCycle {
 	 * appropriate. Does nothing if current page is not yet available.
 	 * @param key factory key object, or null for the default factory
 	 */
+	@Override
 	public void dataSessionRequested(Object key) {
 		
 		IPageRequestHandler handler = PageRequestHandlerTracker.getLastHandler(RequestCycle.get());
@@ -161,7 +154,8 @@ public class DataConversationRequestCycle extends DataRequestCycle {
 	 * Closes and reopens Hibernate session for this Web session. Unrelated models may try to load 
 	 * themselves after this point. 
 	 */
-	private void onException(Exception e) {
+	@Override
+	public void onException(Exception e) {
 		for (Object key : keys) {
 			if (Databinder.hasBoundSession(key)) {
 				Session sess = Databinder.getHibernateSession(key);
@@ -180,22 +174,6 @@ public class DataConversationRequestCycle extends DataRequestCycle {
 	private Page getResponsePage() {
 		IPageRequestHandler handler = PageRequestHandlerTracker.getLastHandler(RequestCycle.get());
 		return (Page) handler.getPage();
-	}
-	
-	// TODO [migration]: refactor together with parent classes
-	public static class ExceptionListener extends AbstractRequestCycleListener {
-		/** 
-		 * Closes and reopens sessions for this request cycle. Unrelated models may try to load 
-		 * themselves after this point. 
-		 */
-		// TODO [migration]: test!
-		@Override
-		public IRequestHandler onException(RequestCycle cycle, Exception ex) {
-			if(cycle instanceof DataConversationRequestCycle){
-				((DataConversationRequestCycle) cycle).onException(ex);
-			}
-			return null;
-		}
 	}
 
 }

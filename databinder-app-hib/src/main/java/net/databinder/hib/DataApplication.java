@@ -22,10 +22,7 @@ package net.databinder.hib;
 import java.util.HashMap;
 
 import org.apache.wicket.Application;
-import org.apache.wicket.IRequestCycleProvider;
 import org.apache.wicket.WicketRuntimeException;
-import org.apache.wicket.request.cycle.RequestCycle;
-import org.apache.wicket.request.cycle.RequestCycleContext;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
@@ -40,7 +37,9 @@ import net.databinder.components.hib.DataBrowser;
 public abstract class DataApplication extends DataApplicationBase implements HibernateApplication {
 	
 	/** App-wide session factories */
-	private HashMap<Object, SessionFactory> hibernateSessionFactories = new HashMap<Object, SessionFactory>();
+	private HashMap<Object, SessionFactory> hibernateSessionFactories = new HashMap<>();
+	
+	private DataRequestCycleListener dataRequestCycleListener;
 	
 	
 	/**
@@ -53,7 +52,8 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 	 */
 	protected void dataInit() {
 		buildHibernateSessionFactory(null);
-		setRequestCycleProvider(new DataRequestCycleProvider());
+		dataRequestCycleListener = newDataRequestCycleListener();
+		getRequestCycleListeners().add(dataRequestCycleListener);
 		if (isDataBrowserAllowed())
 			mountDataBrowser();
 	}
@@ -89,14 +89,14 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 	}
 	
 	/**
-	 * Builds and	a session factory with the given configuration. Passes config
+	 * Builds and a session factory with the given configuration. Passes config
 	 * through configureHibernate methods.
 	 * @param key session factory key; the default key is null
 	 * @param config annotation conifuration
 	 * @see #configureHibernateEssentials(Configuration)
 	 * @see #configureHibernate(Configuration, Object) 
 	 */
-	final public void buildHibernateSessionFactory(Object key, Configuration config) {
+	public final void buildHibernateSessionFactory(Object key, Configuration config) {
 		configureHibernateEssentials(config);
 		configureHibernate(config, key);
 		setHibernateSessionFactory(key, config.buildSessionFactory());
@@ -117,7 +117,7 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 	/**
 	 * For Hibernate settings that should not normally be overriden by client
 	 * applications. Specifically, this method sets Hibernate for a ManagedSessionContext,
-	 * the session lookup method used by DataRequestCycle.
+	 * the session lookup method used by DataRequestCycleListener.
 	 * @param config Hibernate configuration
 	 */
 	protected void configureHibernateEssentials(Configuration config) {
@@ -175,19 +175,16 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 		return isDevelopment();
 	}
 	
-	protected class DataRequestCycleProvider implements IRequestCycleProvider {
-
-		public RequestCycle get(RequestCycleContext context) {
-			return DataApplication.this.newRequestCycle(context);
-		}
-	}
-	
 	/**
-	 * Called by the DataRequestCycleProvider.
-	 * Returns new DataRequestCycle.
-	 * Override for a different request cycle.
+	 * Returns the new {@link DataRequestCycleListener} for this application.
+	 * Override to use a different one.
 	 */
-	protected RequestCycle newRequestCycle(RequestCycleContext context) {
-		return new DataRequestCycle(context);
+	protected DataRequestCycleListener newDataRequestCycleListener() {
+		return new DataRequestCycleListener();
+	}
+
+	@Override
+	public HibernateRequestCycleListener getHibernateRequestCyleListener() {
+		return dataRequestCycleListener;
 	}
 }

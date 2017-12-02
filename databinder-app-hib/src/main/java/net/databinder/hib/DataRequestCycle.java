@@ -25,10 +25,6 @@ package net.databinder.hib;
 
 import java.util.HashSet;
 
-import org.apache.wicket.request.IRequestHandler;
-import org.apache.wicket.request.cycle.AbstractRequestCycleListener;
-import org.apache.wicket.request.cycle.RequestCycle;
-import org.apache.wicket.request.cycle.RequestCycleContext;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.context.internal.ManagedSessionContext;
@@ -42,17 +38,12 @@ import org.slf4j.LoggerFactory;
  * @see Databinder
  * @author Nathan Hamblen
  */
-public class DataRequestCycle extends RequestCycle implements HibernateRequestCycle {
+public class DataRequestCycle implements HibernateRequestCycleListener {
 
 	/** Keys for session factories that have been opened for this request */ 
-	protected HashSet<Object> keys = new HashSet<Object>();
+	protected HashSet<Object> keys = new HashSet<>();
 
 	private static final Logger log = LoggerFactory.getLogger(DataRequestCycle.class);
-
-	public DataRequestCycle(RequestCycleContext context) {
-		super(context);
-		this.getListeners().add(new ExceptionListener());
-	}
 	
 
 	/** Roll back active transactions and close session. */
@@ -96,7 +87,6 @@ public class DataRequestCycle extends RequestCycle implements HibernateRequestCy
 	 * not been committed, it will be rolled back before closing the session.
 	 * @see net.databinder.components.hib.DataForm#onSubmit()
 	 */
-	@Override
 	protected void onEndRequest() {
 		for (Object key : keys) {
 			SessionFactory sf = Databinder.getHibernateSessionFactory(key);
@@ -107,21 +97,15 @@ public class DataRequestCycle extends RequestCycle implements HibernateRequestCy
 		}
 	}
 	
-	public static class ExceptionListener extends AbstractRequestCycleListener {
-		/** 
-		 * Closes and reopens sessions for this request cycle. Unrelated models may try to load 
-		 * themselves after this point. 
-		 */
-		// TODO [migration]: test!
-		@Override
-		public IRequestHandler onException(RequestCycle cycle, Exception ex) {
-			if(cycle instanceof DataRequestCycle){
-				DataRequestCycle dataRequestCycle = (DataRequestCycle) cycle;
-				dataRequestCycle.onEndRequest();
-				dataRequestCycle.onBeginRequest();
-			}
-			return null;
-		}
+	protected void onBeginRequest() {
+		// NOOP in this class
+	}
+	
+
+	public void onException(Exception ex) {
+
+		onEndRequest();
+		onBeginRequest();
 	}
 	
 }

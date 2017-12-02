@@ -17,4 +17,9 @@ public interface HibernateApplication {
 	 * @return configured Hibernate session factory
 	 */
 	SessionFactory getHibernateSessionFactory(Object key);
+	
+	/**
+	 * @return the {@link HibernateRequestCycleListener} for this application.
+	 */
+	HibernateRequestCycleListener getHibernateRequestCyleListener();
 }
