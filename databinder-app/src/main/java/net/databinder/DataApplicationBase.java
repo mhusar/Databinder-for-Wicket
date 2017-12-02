@@ -23,10 +23,7 @@ import java.net.URI;
 
 import org.apache.wicket.ConverterLocator;
 import org.apache.wicket.IConverterLocator;
-import org.apache.wicket.IRequestCycleProvider;
 import org.apache.wicket.protocol.http.WebApplication;
-import org.apache.wicket.request.cycle.RequestCycle;
-import org.apache.wicket.request.cycle.RequestCycleContext;
 
 import net.databinder.converters.ColorConverter;
 import net.databinder.converters.URIConverter;
@@ -41,7 +38,6 @@ public abstract class DataApplicationBase extends WebApplication {
 	@Override
 	protected void internalInit() {
 		super.internalInit();
-		setRequestCycleProvider(new CookieRequestCycleProvider());
 		dataInit();
 		
 	}
@@ -68,12 +64,4 @@ public abstract class DataApplicationBase extends WebApplication {
 	protected boolean isDevelopment() {
 		return usesDevelopmentConfig();
 	}
-
-	private static class CookieRequestCycleProvider implements IRequestCycleProvider {
-
-		public RequestCycle get(RequestCycleContext context) {
-			return new CookieRequestCycle(context);
-		}
-	}
-	
 }

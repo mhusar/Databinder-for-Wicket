@@ -35,8 +35,6 @@ import org.hibernate.context.internal.ManagedSessionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.databinder.CookieRequestCycle;
-
 /**
  * <p>Opens Hibernate sessions and transactions as required and closes them at a request's
  * end. Uncomitted transactions are rolled back. Uses keyed Hibernate session factories from
@@ -44,7 +42,7 @@ import net.databinder.CookieRequestCycle;
  * @see Databinder
  * @author Nathan Hamblen
  */
-public class DataRequestCycle extends CookieRequestCycle implements HibernateRequestCycle {
+public class DataRequestCycle extends RequestCycle implements HibernateRequestCycle {
 
 	/** Keys for session factories that have been opened for this request */ 
 	protected HashSet<Object> keys = new HashSet<Object>();

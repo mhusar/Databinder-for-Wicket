@@ -31,10 +31,8 @@ import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.protocol.http.WebSession;
 import org.apache.wicket.request.Request;
 import org.apache.wicket.request.cycle.RequestCycle;
-import org.apache.wicket.request.http.WebResponse;
-import org.apache.wicket.util.time.Duration;
+import org.apache.wicket.util.cookies.CookieUtils;
 
-import net.databinder.CookieRequestCycle;
 import net.databinder.auth.data.DataUser;
 
 /**
@@ -45,6 +43,9 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
 	/** Effective signed in state. */
 	private IModel<T> userModel;
 	private static final String CHARACTER_ENCODING = "UTF-8";
+	
+	/** Cookie utils with default settings */
+	private CookieUtils signInCookieUtils;
 
 	/**
 	 * Initialize new session.
@@ -80,30 +81,6 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
 	 * @return model for current user
 	 */
 	public abstract IModel<T> createUserModel(T user);
-
-	/**
-	 * @return length of time sign-in cookies should persist, defined here as one month
-	 * @see Cookie#setMaxAge(int)
-	 */
-	protected Duration getSignInCookieMaxAge() {
-		return Duration.days(31);
-	}
-	
-	/**
-	 * @return whether the sign-in cookies should be http only
-	 * @see Cookie#setHttpOnly(boolean)
-	 */
-	protected boolean isSignInHttpOnly() {
-		return true;
-	}
-
-	/**
-	 * @return whether the sign-in cookies should be secure cookies
-	 * @see Cookie#setSecure(boolean)
-	 */
-	protected boolean isSignInSecure() {
-		return true;
-	}
 
 	/**
 	 * Determine if user is signed in, or can be via cookie.
@@ -152,9 +129,8 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
 	 * @return true if signed in, false if credentials incorrect or unavailable
 	 */
 	protected boolean cookieSignIn() {
-		CookieRequestCycle requestCycle = (CookieRequestCycle) RequestCycle.get();
-		Cookie userCookie = requestCycle.getCookie(getUserCookieName()),
-			token = requestCycle.getCookie(getAuthCookieName());
+		Cookie userCookie = getSignInCookieUtils().getCookie(getUserCookieName()),
+		token = getSignInCookieUtils().getCookie(getAuthCookieName());
 
 		if (userCookie != null && token != null) {
 			T potential;
@@ -192,16 +168,14 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
 	}
 
 	/**
-	 * Sets cookie to remember the currently signed-in user. Sets max age to
-	 * value from getSignInCookieMaxAge().
-	 * @see AuthDataSessionBase#getSignInCookieMaxAge()
+	 * Sets cookie to remember the currently signed-in user. Cookie settings are according to
+	 * {@link AuthApplication#getSignInCookieUtils()}
 	 */
 	protected void setCookie() {
 		if (userModel == null)
 			throw new WicketRuntimeException("User must be signed in when calling this method");
 		
 		T cookieUser = getUser();
-		WebResponse resp = (WebResponse) RequestCycle.get().getResponse();
 		
 		Cookie name, auth;
 		try {
@@ -212,24 +186,12 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
 			throw new WicketRuntimeException(e);
 		}
 		
-		configureSignInCookie(name);
-		configureSignInCookie(auth);
-
-		RequestCycle rc = RequestCycle.get();
-		if (rc instanceof CookieRequestCycle) {
-			CookieRequestCycle cookieRc = (CookieRequestCycle) rc;
-			cookieRc.applyScope(name);
-			cookieRc.applyScope(auth);
-		}
-		
-		resp.addCookie(name);
-		resp.addCookie(auth);
+		saveCookie(name);
+		saveCookie(auth);
 	}
 
-	private void configureSignInCookie(Cookie auth) {
-		auth.setMaxAge((int) getSignInCookieMaxAge().seconds());
-		auth.setHttpOnly(isSignInHttpOnly());
-		auth.setSecure(isSignInSecure());
+	private void saveCookie(Cookie signInCookie) {
+		getSignInCookieUtils().save(signInCookie.getName(), signInCookie.getValue());
 	}
 	
 	/**
@@ -241,18 +203,24 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
 			userModel.detach();
 	}
 	
-	/** Nullifies userModela and clears authentication cookies. */
+	/** Nullifies userModel and clears authentication cookies. */
 	protected void clearUser() {
 		userModel = null;
-		CookieRequestCycle requestCycle = (CookieRequestCycle) RequestCycle.get();
-		requestCycle.clearCookie(getUserCookieName());
-		requestCycle.clearCookie(getAuthCookieName());
+		getSignInCookieUtils().remove(getUserCookieName());
+		getSignInCookieUtils().remove(getAuthCookieName());
   }	  
 
   /** Signs out and invalidates session. */	
 	public void signOut() {
-	  clearUser();
+		clearUser();
 		getSessionStore().invalidate(RequestCycle.get().getRequest());
+	}
+	
+	private CookieUtils getSignInCookieUtils() {
+		if (signInCookieUtils == null) {
+			signInCookieUtils = new CookieUtils(getApp().getSignInCookieDefaults());
+		}
+		return signInCookieUtils;
 	}
 
 }

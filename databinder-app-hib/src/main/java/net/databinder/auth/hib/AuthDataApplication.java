@@ -35,7 +35,9 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.request.Request;
 import org.apache.wicket.request.Response;
 import org.apache.wicket.request.cycle.RequestCycle;
+import org.apache.wicket.util.cookies.CookieDefaults;
 import org.apache.wicket.util.crypt.Base64;
+import org.apache.wicket.util.time.Duration;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Restrictions;
 
@@ -63,7 +65,7 @@ import net.databinder.hib.Databinder;
  */
 public abstract class AuthDataApplication extends DataApplication 
 implements IUnauthorizedComponentInstantiationListener, IRoleCheckingStrategy, AuthApplication {
-
+	
 	/**
 	 * Internal initialization. Client applications should not normally override
 	 * or call this method.
@@ -173,5 +175,26 @@ implements IUnauthorizedComponentInstantiationListener, IRoleCheckingStrategy, A
 		digest.update((fwd + "-" + req.getRemoteAddr()).getBytes());
 		byte[] hash = digest.digest(user.getUsername().getBytes());
 		return new String(Base64.encodeBase64(hash));
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Defaults are
+	 * <ul>
+	 * <li>maxAge: 7 days 
+	 * <li>http-only: true
+	 * <li>secure: true
+	 * </ul>
+	 * Override if you would like other settings.
+	 * @return the defaults
+	 */
+	@Override
+	public CookieDefaults getSignInCookieDefaults() {
+		CookieDefaults cookieDefaults = new CookieDefaults();
+		cookieDefaults.setMaxAge((int) Duration.days(7).seconds());
+		cookieDefaults.setHttpOnly(true);
+		cookieDefaults.setSecure(true);
+		return cookieDefaults;
 	}
 }
