@@ -79,7 +79,6 @@ public class DataRequestCycleListener extends AbstractRequestCycleListener imple
 	/**
 	 * Closes and reopens sessions for this request cycle. Unrelated models may try to load themselves after this point.
 	 */
-	// TODO [migration]: test!
 	@Override
 	public IRequestHandler onException(RequestCycle cycle, Exception ex) {
 		DataRequestCycle dataRequestCycle = getDataRequestCycle(cycle);

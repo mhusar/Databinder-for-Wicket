@@ -72,7 +72,7 @@ public class DataConversationRequestCycle extends DataRequestCycle {
 		Page page = (Page) handler.getPage();
 		
 		if (page == null) {
-			// TODO [migration]
+			// TODO [migration 1.7]: the following used to handle bookmarkable pages that implement IConversationPage
 			throw new IllegalStateException("[migration] Page is null. Refactor.");
 //			Class pageClass = getResponsePageClass(); 
 //			if (pageClass != null) {

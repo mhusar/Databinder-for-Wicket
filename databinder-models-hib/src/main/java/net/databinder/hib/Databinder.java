@@ -82,7 +82,7 @@ public class Databinder {
 	 * @return true if a session is bound for the keyed factory
 	 */
 	public static boolean hasBoundSession(Object key) {
-		// TODO [migration]: is managed session context still the correct thing to do in hibernate 5?
+		// TODO: is managed session context still the correct thing to do in hibernate 5?
 		return ManagedSessionContext.hasBind(getHibernateSessionFactory(key));
 	}
 	
@@ -94,8 +94,6 @@ public class Databinder {
 	 */
 	private static void dataSessionRequested(Object key) {
 		if (!hasBoundSession(key) && inRequestCycle()) {
-			// TODO [migration]: is this comment still true?
-			// if session is unavailable, it could be a late-loaded conversational cycle
 			getHibernateApplication().getHibernateRequestCyleListener().dataSessionRequested(key);
 		}
 	}
