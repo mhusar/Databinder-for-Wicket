@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * @see Databinder
  * @author Nathan Hamblen
  */
-public class DataRequestCycle implements HibernateRequestCycleListener {
+public class DataRequestCycle implements HibernateSessionStarter {
 
 	/** Keys for session factories that have been opened for this request */ 
 	protected HashSet<Object> keys = new HashSet<>();

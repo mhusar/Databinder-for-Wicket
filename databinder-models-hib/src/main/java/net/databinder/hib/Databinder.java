@@ -90,7 +90,7 @@ public class Databinder {
 	 * Notifies current request cycle that a data session was requested, if a session factory
 	 * was not already bound for this thread and the request cycle is an DataRequestCycle.
 	 * @param key or null for the default factory
-	 * @see HibernateRequestCycleListener
+	 * @see HibernateSessionStarter
 	 */
 	private static void dataSessionRequested(Object key) {
 		if (!hasBoundSession(key) && inRequestCycle()) {

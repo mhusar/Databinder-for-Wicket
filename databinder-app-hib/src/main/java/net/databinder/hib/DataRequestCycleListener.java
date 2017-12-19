@@ -36,7 +36,7 @@ import org.apache.wicket.request.cycle.RequestCycle;
  * 
  * @author Conny Kuehne
  */
-public class DataRequestCycleListener extends AbstractRequestCycleListener implements HibernateRequestCycleListener {
+public class DataRequestCycleListener extends AbstractRequestCycleListener implements HibernateSessionStarter {
 
 	/**
 	 * Meta data key for the keys for session factories that have been opened for this request

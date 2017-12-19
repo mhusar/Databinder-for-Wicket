@@ -184,7 +184,7 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 	}
 
 	@Override
-	public HibernateRequestCycleListener getHibernateRequestCyleListener() {
+	public HibernateSessionStarter getHibernateRequestCyleListener() {
 		return dataRequestCycleListener;
 	}
 }

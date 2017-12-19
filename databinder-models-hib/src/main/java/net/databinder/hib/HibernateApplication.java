@@ -19,7 +19,7 @@ public interface HibernateApplication {
 	SessionFactory getHibernateSessionFactory(Object key);
 	
 	/**
-	 * @return the {@link HibernateRequestCycleListener} for this application.
+	 * @return the {@link HibernateSessionStarter} for this application.
 	 */
-	HibernateRequestCycleListener getHibernateRequestCyleListener();
+	HibernateSessionStarter getHibernateRequestCyleListener();
 }
