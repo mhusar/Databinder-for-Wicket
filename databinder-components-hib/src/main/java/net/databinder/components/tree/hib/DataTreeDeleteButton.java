@@ -2,7 +2,6 @@ package net.databinder.components.tree.hib;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import net.databinder.components.tree.data.DataTreeObject;
 import net.databinder.hib.Databinder;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;

@@ -15,7 +15,6 @@ import org.apache.wicket.model.Model;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Property;
 
-import net.databinder.components.tree.data.DataTreeObject;
 import net.databinder.models.hib.CriteriaBuilder;
 import net.databinder.models.hib.HibernateListModel;
 import net.databinder.models.hib.HibernateObjectModel;

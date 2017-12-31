@@ -19,6 +19,7 @@ public class DataTreeExpandAllLink extends AjaxLink {
 		this.tree = tree;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void onClick(AjaxRequestTarget target) {
 		tree.getTreeState().expandAll();

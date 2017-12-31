@@ -1,4 +1,4 @@
-package net.databinder.components.tree.data;
+package net.databinder.components.tree.hib;
 
 import java.util.Collection;
 
