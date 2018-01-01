@@ -1,12 +1,12 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
+ * contributor license agreements. See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,8 +22,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.wicket.MetaDataKey;
-
 import net.databinder.components.tree.data.DataTreeObject;
 import net.databinder.models.hib.HibernateObjectModel;
 
@@ -37,14 +35,10 @@ import net.databinder.models.hib.HibernateObjectModel;
  * @author ckuehne
  * @author svenmeier (based on FooExpansion in wicket examples)
  */
-public class DataTreeExpansion<T> implements Set<DataTreeObject<T>>, Serializable {
+public class DataTreeExpansion<T extends DataTreeObject<T>> implements Set<T>, Serializable {
 	private static final long serialVersionUID = 1L;
 
-	public static final MetaDataKey<DataTreeExpansion<?>> KEY = new MetaDataKey<DataTreeExpansion<?>>() {
-		private static final long serialVersionUID = 1L;
-	};
-
-	private Set<HibernateObjectModel<DataTreeObject<T>>> objects = new HashSet<>();
+	private Set<HibernateObjectModel<T>> objects = new HashSet<>();
 
 	private boolean inverse;
 
@@ -67,7 +61,7 @@ public class DataTreeExpansion<T> implements Set<DataTreeObject<T>>, Serializabl
 	}
 
 	@Override
-	public boolean add(DataTreeObject<T> dto) {
+	public boolean add(T dto) {
 		if (inverse) {
 			return objects.remove(modelOf(dto));
 		} else {
@@ -80,16 +74,16 @@ public class DataTreeExpansion<T> implements Set<DataTreeObject<T>>, Serializabl
 	public boolean remove(Object o) {
 
 		if (inverse) {
-			return objects.add(modelOf((DataTreeObject<T>) o));
+			return objects.add(modelOf((T) o));
 		} else {
-			return objects.remove(modelOf((DataTreeObject<T>) o));
+			return objects.remove(modelOf((T) o));
 		}
 	}
 
 	@Override
 	public boolean contains(Object o) {
 		@SuppressWarnings("unchecked")
-		HibernateObjectModel<DataTreeObject<T>> dto = modelOf((DataTreeObject<T>) o);
+		HibernateObjectModel<T> dto = modelOf((T) o);
 
 		if (inverse) {
 			return !objects.contains(dto);
@@ -119,7 +113,7 @@ public class DataTreeExpansion<T> implements Set<DataTreeObject<T>>, Serializabl
 	}
 
 	@Override
-	public Iterator<DataTreeObject<T>> iterator() {
+	public Iterator<T> iterator() {
 		throw new UnsupportedOperationException();
 	}
 
@@ -134,7 +128,7 @@ public class DataTreeExpansion<T> implements Set<DataTreeObject<T>>, Serializabl
 	}
 
 	@Override
-	public boolean addAll(Collection<? extends DataTreeObject<T>> c) {
+	public boolean addAll(Collection<? extends T> c) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -148,8 +142,9 @@ public class DataTreeExpansion<T> implements Set<DataTreeObject<T>>, Serializabl
 		throw new UnsupportedOperationException();
 	}
 
-	private static <T> HibernateObjectModel<DataTreeObject<T>> modelOf(
-			DataTreeObject<T> persistentObject) {
+	private static <T extends DataTreeObject<T>> HibernateObjectModel<T> modelOf(
+			T persistentObject) {
+
 		return new HibernateObjectModel<>(persistentObject);
 	}
 }

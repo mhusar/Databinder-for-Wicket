@@ -15,16 +15,16 @@ import net.databinder.models.hib.HibernateObjectModel;
  * 
  * @author Conny Kuehne
  */
-public class DataProvider<T> implements ITreeProvider<DataTreeObject<T>> {
+public class DataProvider<T extends DataTreeObject<T>> implements ITreeProvider<T> {
 
 	private static final long serialVersionUID = 1L;
 
-	private HibernateObjectModel<DataTreeObject<T>> rootModel;
+	private HibernateObjectModel<T> rootModel;
 
 	/**
 	 * Construct.
 	 */
-	public DataProvider(HibernateObjectModel<DataTreeObject<T>> rootModel) {
+	public DataProvider(HibernateObjectModel<T> rootModel) {
 		this.rootModel = rootModel;
 	}
 
@@ -37,30 +37,26 @@ public class DataProvider<T> implements ITreeProvider<DataTreeObject<T>> {
 	}
 
 	@Override
-	public Iterator<DataTreeObject<T>> getRoots() {
-		
-		List<DataTreeObject<T>> roots = new ArrayList<>(1);
+	public Iterator<T> getRoots() {
+
+		List<T> roots = new ArrayList<>(1);
 		roots.add(rootModel.getObject());
 		return roots.iterator();
 	}
 
 	@Override
-	public boolean hasChildren(DataTreeObject<T> dto) {
-		// return for foo also: dto.getParent() == null
+	public boolean hasChildren(T dto) {
+
 		return dto.getChildren() != null && !dto.getChildren().isEmpty();
 	}
 
-	
 	@Override
-	public Iterator<DataTreeObject<T>> getChildren(final DataTreeObject<T> dto) {
-		return (Iterator<DataTreeObject<T>>) dto.getChildren().iterator();
+	public Iterator<T> getChildren(final T dto) {
+		return dto.getChildren().iterator();
 	}
 
-	/**
-	 * Creates a {@link DataModel}.
-	 */
 	@Override
-	public IModel<DataTreeObject<T>> model(DataTreeObject<T> dto) {
+	public IModel<T> model(T dto) {
 		return new HibernateObjectModel<>(dto);
 	}
 }

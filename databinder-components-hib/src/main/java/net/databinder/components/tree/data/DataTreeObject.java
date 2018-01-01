@@ -2,28 +2,26 @@ package net.databinder.components.tree.data;
 
 import java.util.Collection;
 
+import net.databinder.components.tree.hib.DataProvider;
+
 /**
- * Classes used as the concrete type of a {@link net.databinder.components.tree.hib.DataTree},
- * i.e., the type of objects being represented by the tree nodes, must implement this interface.
+ * Interface for objects used as tree nodes.
+ * 
+ * @see DataProvider
  * 
  * @author Thomas Kappler
- * @param <T>
- *        the concrete type this tree node is representing
+ * @author ckuehne
  * 
+ * @param <T> the type of the actual node object represented by this data tree object
  */
-public interface DataTreeObject<T> {
+public interface DataTreeObject<T extends DataTreeObject<T>> {
 
-	/**
-	 * @return the children of this tree node
-	 */
-	public Collection<T> getChildren();
-	
-	/** Add new child node */
-	public void addChild(T child);
-	
-	/**
-	 * @return the parent of this tree node
-	 */
-	public T getParent();
+	/** @return the children of this. */
+	Collection<T> getChildren();
 
+	/** Adds a new child node to this. */
+	void addChild(T child);
+
+	/** @return the parent of this. */
+	T getParent();
 }
