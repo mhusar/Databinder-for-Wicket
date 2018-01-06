@@ -171,10 +171,8 @@ public abstract class DataProfilePanelBase<T extends DataUser> extends Panel {
 		getAuthSession().signIn(getUser(), (Boolean) rememberMe.getModelObject());
 
 		if (returnPage == null) {
-			// TODO [migration]: test
-//			if (!continueToOriginalDestination())
-//				setResponsePage(getApplication().getHomePage());
-			continueToOriginalDestination();
+			continueToOriginalDestination(); // throws exception if intercept page specified previously
+			setResponsePage(getApplication().getHomePage());
 		} else
 			setResponsePage(returnPage.get());
 	}

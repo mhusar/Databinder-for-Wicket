@@ -93,15 +93,16 @@ public class DataSignInPanel<T extends DataUser> extends Panel {
 		}
 		@Override
 		protected void onSubmit() {
-			if (getAuthSession().signIn((String)username.getModelObject(), (String)password.getModelObject(), 
-					(Boolean)rememberMe.getModelObject()))
-			{
+			if (getAuthSession().signIn((String) username.getModelObject(),
+					(String) password.getModelObject(), (Boolean) rememberMe.getModelObject())) {
 				if (returnPage == null) {
-						setResponsePage(getApplication().getHomePage());
+					continueToOriginalDestination(); // throws exception if intercept page set
+					setResponsePage(getApplication().getHomePage()); // if we reach this line there was no intercept page
 				} else
 					setResponsePage(returnPage.get());
 			} else
-				error(getLocalizer().getString("signInFailed", this, "Sorry, these credentials are not recognized."));
+				error(getLocalizer().getString("signInFailed", this,
+						"Sorry, these credentials are not recognized."));
 		}
 	}
 	
