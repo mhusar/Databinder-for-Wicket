@@ -18,9 +18,6 @@
  */
 package net.databinder.auth.components;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.wicket.Application;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
@@ -139,7 +136,7 @@ public abstract class DataProfilePanelBase<T extends DataUser> extends Panel {
 			passwordConfirm.setLabel(new ResourceModel("data.auth.passwordConfirm", "Retype Password"));
 			add(new SimpleFormComponentLabel("passwordConfirm-label", passwordConfirm));
 			
-			add(new WebMarkupContainer("rememberMeRow") { 
+			add(new WebMarkupContainer("rememberMeRow") {
 				public boolean isVisible() {
 					return !existing();
 				}
@@ -188,14 +185,13 @@ public abstract class DataProfilePanelBase<T extends DataUser> extends Panel {
 	
 	/** Username is valid if isAvailable(username) returns true */
 	public static class UsernameValidator extends StringValidator {
+
 		@Override
 		public void validate(IValidatable validatable) {
 			String username = (String) validatable.getValue();
 			if (username != null && !isAvailable(username)) {
-				Map<String, Object> m = new HashMap<String, Object>(1);
-				m.put("username", username);
-				// TODO [migration]: test
-				validatable.error(new ValidationError().addKey("data.auth.username.taken"));
+				validatable.error(new ValidationError().addKey("data.auth.username.taken")
+						.setVariable("username", username));
 			}
 		}
 	}

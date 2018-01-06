@@ -19,7 +19,8 @@ import org.apache.wicket.model.IModel;
  * data.auth.remember
  * data.auth.register
  * data.auth.update
- * data.auth.username.taken * </pre> * Must be overriden in a containing page
+ * data.auth.username.taken * </pre> 
+ * Must be overriden in a containing page
  * or a subclass of this panel.
  */
 public class DataProfilePanel<T extends DataUser> extends DataProfilePanelBase<T> {
@@ -33,6 +34,7 @@ public class DataProfilePanel<T extends DataUser> extends DataProfilePanelBase<T
 			userModel = new HibernateObjectModel(((AuthApplication)getApplication()).getUserClass());
 
 		return new DataForm<T>(id, (HibernateObjectModel<T>) userModel) {
+			
 			@Override
 			protected void onSubmit() {
 				super.onSubmit();
