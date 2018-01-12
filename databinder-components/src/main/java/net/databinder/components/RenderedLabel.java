@@ -81,7 +81,7 @@ public class RenderedLabel extends Image  {
 	private boolean antiAliased = true;
 
 	/** If true, resource is shared across application with a permanent URL. */
-	private boolean isShared = true; //FIXME [migration]: set back to false default value
+	private boolean isShared = false;
 	/** Hash of the most recently displayed label attributes. -1 is initial value, 0 for blank labels. */
 	private int labelHash = -1;
 
@@ -137,12 +137,11 @@ public class RenderedLabel extends Image  {
 	@Override
 	protected void onBeforeRender() {
 		super.onBeforeRender();
-		int curHash = getLabelHash();
+		int curHash = computeLabelHash();
 		if (isShared) {
 			if (labelHash != curHash) {
 				String hash = Integer.toHexString(curHash);
 				SharedResources shared = getApplication().getSharedResources();
-				// TODO [migration]: unclear if the following works and if there isn't a better way now
 				ResourceReference resourceRef = shared.get(RenderedLabel.class, hash, null, null, null, false);
 				if (resourceRef != null) {
 
@@ -164,9 +163,8 @@ public class RenderedLabel extends Image  {
 			else if (labelHash != curHash)
 				resource.setState(this);
 		}
-		// TODO [migration]: use appropriate IResourceCachingStrategy (do we need all this)
-//		resource.setCacheable(isShared);
-		labelHash = getLabelHash();
+		resource.setCacheable(isShared);
+		labelHash = computeLabelHash();
 	}
 
 	/**
@@ -200,7 +198,7 @@ public class RenderedLabel extends Image  {
 		tag.put("alt", getDefaultModelObjectAsString());
 	}
 
-	protected int getLabelHash() {
+	protected int computeLabelHash() {
 		return getLabelHash(getDefaultModelObjectAsString(), font, color, backgroundColor, maxWidth);
 	}
 
@@ -266,8 +264,7 @@ public class RenderedLabel extends Image  {
 	 * Utility method to load a specific instance of a the rendering shared resource.
 	 */
 	protected static void loadSharedResources(RenderedTextImageResource res, String text, Font font, Color color, Color backgroundColor, Integer maxWidth) {
-		// TODO [migration]: caching strategy instead?
-		//		res.setCacheable(true);
+		res.setCacheable(true);
 		res.backgroundColor = backgroundColor == null ? defaultBackgroundColor : backgroundColor;
 		res.color = color == null ? defaultColor : color;
 		res.font = font == null ? defaultFont : font;
@@ -288,8 +285,7 @@ public class RenderedLabel extends Image  {
 	 */
 	protected RenderedTextImageResource newRenderedTextImageResource(boolean isShared) {
 		RenderedTextImageResource res = new RenderedTextImageResource();
-		// TODO [migration]
-//		res.setCacheable(isShared);
+		res.setCacheable(isShared);
 		res.setState(this);
 		return res;
 	}
@@ -305,17 +301,13 @@ public class RenderedLabel extends Image  {
 		protected Integer maxWidth;
 		protected String text;
 		protected boolean antiAliased;
+		
+		protected boolean cacheable;
 
 		protected RenderedTextImageResource() {
 			super(1, 1,"png");	// tiny default that will resize to fit text
 			setType(BufferedImage.TYPE_INT_ARGB); // allow alpha transparency
 		}
-		
-		// TODO [migration]: do we need to handle this?
-//		@Override
-//		protected void setHeaders(WebResponse response) {
-//			// don't set expire headers; if resource changes, its URL will change
-//		}
 
 		public void setState(RenderedLabel label) {
 			backgroundColor = label.getBackgroundColor();
@@ -431,6 +423,24 @@ public class RenderedLabel extends Image  {
 		 */
 		public void preload() {
 			getImageData(null);
+		}
+		
+		public boolean isCacheable() {
+			return cacheable;
+		}
+
+		public void setCacheable(boolean cacheable) {
+			this.cacheable = cacheable;
+		}
+
+		
+		@Override
+		protected void configureResponse(final ResourceResponse response,
+				final Attributes attributes) {
+			super.configureResponse(response, attributes);
+			if(!cacheable) {
+				response.disableCaching();
+			}
 		}
 	}
 
