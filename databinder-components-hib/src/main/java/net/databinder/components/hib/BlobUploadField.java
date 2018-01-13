@@ -34,6 +34,7 @@ import net.databinder.hib.Databinder;
  * upload component.
  * @author Nathan Hamblen
  */
+// FIXME: This class cannot have worked in the last version of Databinder. This is, because uploadField is never initialized.
 public class BlobUploadField extends FormComponentPanel<Blob> {
 	
 	private FileUploadField uploadField;
@@ -61,7 +62,7 @@ public class BlobUploadField extends FormComponentPanel<Blob> {
 	@Override
 	public void updateModel() {
 		if (uploadField.getFileUpload() != null) {
-			// TODO [migration] Test this
+			// TODO [migration] Test this.
 			setModelObject(Hibernate.getLobCreator(Databinder.getHibernateSession())
 					.createBlob(uploadField.getFileUpload().getBytes()));
 			onUpdated();
