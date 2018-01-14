@@ -16,7 +16,7 @@
   </license>
  </licenses>
  <properties>
-  <wicket.version>7.6.0</wicket.version>
+  <wicket.version>7.9.0</wicket.version>
   <scala.version>2.7.5</scala.version>
   <hibernate-core.version>5.2.10.Final</hibernate-core.version>
  </properties>
