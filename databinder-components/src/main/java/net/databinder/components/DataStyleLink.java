@@ -1,7 +1,7 @@
 /*
  * Databinder: a simple bridge from Wicket to Hibernate
- * Copyright (C) 2006  Nathan Hamblen nathan@technically.us
- 
+ * Copyright (C) 2006 Nathan Hamblen nathan@technically.us
+ * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -9,23 +9,34 @@
  * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 package net.databinder.components;
 
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.request.resource.PackageResourceReference;
 
 /**
  * Component for a link to the basic Databinder stylesheet.
+ * 
  * @author Nathan Hamblen
  */
-public class DataStyleLink extends StyleLink {
-	
+public class DataStyleLink extends WebMarkupContainer {
+
 	public DataStyleLink(String id) {
-		super(id, DataStyleLink.class, "DataStyleSheet.css");
+		super(id);
+	}
+
+	@Override
+	public void renderHead(IHeaderResponse response) {
+		response.render(CssHeaderItem
+				.forReference(new PackageResourceReference(this.getClass(), "DataStyleSheet.css")));
 	}
 }
