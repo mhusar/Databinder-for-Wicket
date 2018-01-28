@@ -92,7 +92,7 @@ public class DataForm<T> extends DataFormBase<T> {
 	 * @return this 
 	 */
 	@Override
-	public DataForm setFactoryKey(Object key) {
+	public DataForm<T> setFactoryKey(Object key) {
 		super.setFactoryKey(key);
 		getPersistentObjectModel().setFactoryKey(key);
 		return this;
@@ -110,7 +110,7 @@ public class DataForm<T> extends DataFormBase<T> {
 	 * @param object  to attach to this form
 	 * @return this form, for chaining
 	 */
-	public DataForm setPersistentObject(T object) {
+	public DataForm<T> setPersistentObject(T object) {
 		getPersistentObjectModel().setObject(object);
 		modelChanged();
 		return this;
@@ -144,7 +144,7 @@ public class DataForm<T> extends DataFormBase<T> {
 	 * @see HibernateObjectModel#unbind()
 	 * @return this form, for chaining
 	 */
-	public DataForm clearPersistentObject() {
+	public DataForm<T> clearPersistentObject() {
 		getPersistentObjectModel().unbind();
 		modelChanged();
 		return this;
@@ -154,13 +154,13 @@ public class DataForm<T> extends DataFormBase<T> {
 	 * @return the effective compound model for this form, which may be
 	 * attached to a parent component
 	 */
-	protected CompoundPropertyModel getCompoundModel() {
-		IModel model = getModel();
+	protected CompoundPropertyModel<?> getCompoundModel() {
+		IModel<?> model = getModel();
 		Component cur = this;
 		while (cur != null) {
 			model = cur.getDefaultModel();
 			if (model != null && model instanceof CompoundPropertyModel)
-				return (CompoundPropertyModel) model;
+				return (CompoundPropertyModel<?>) model;
 			cur = cur.getParent();
 		}
 		throw new WicketRuntimeException("DataForm has no parent compound model");
