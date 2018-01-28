@@ -87,7 +87,7 @@ public class DataSignInPanel<T extends DataUser> extends Panel {
 			password.setLabel(new ResourceModel("data.auth.password", "Password"));
 			add(new SimpleFormComponentLabel("password-label", password));
 			add(rememberMe = new CheckBox("rememberMe", new Model<Boolean>(getRememberMeDefault())));
-			add(new Label("rememberMe-text", getString("data.auth.remember", null, "Always sign in automatically")));
+			add(new Label("rememberMe-text", new ResourceModel("data.auth.remember", "Always sign in automatically")));
 			
 			add(lowFormSocket("lowFormSocket"));
 		}

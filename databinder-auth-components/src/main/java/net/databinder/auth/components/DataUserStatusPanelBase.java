@@ -27,6 +27,7 @@ import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.model.ResourceModel;
 
 import net.databinder.auth.AuthApplication;
 import net.databinder.auth.AuthSession;
@@ -70,7 +71,7 @@ public abstract class DataUserStatusPanelBase<T extends DataUser> extends Panel 
 					}
 				}));
 			}
-		}.add(new Label("text", getString("data.auth.status.account", null, "Account"))));
+		}.add(new Label("text", new ResourceModel("data.auth.status.account", "Account"))));
 
 		wrapper.add(new BookmarkablePageLink("admin", adminPageClass()) {
 			@Override
@@ -82,7 +83,7 @@ public abstract class DataUserStatusPanelBase<T extends DataUser> extends Panel 
 				T user = ((AuthSession<T>) getSession()).getUser();
 				return user != null && user.hasRole(Roles.ADMIN);
 			}
-		}.add(new Label("text", getString("data.auth.status.admin", null, "Admin"))));
+		}.add(new Label("text", new ResourceModel("data.auth.status.admin", "Admin"))));
 
 		wrapper.add(new Link("signOut") {
 			@Override
@@ -90,9 +91,9 @@ public abstract class DataUserStatusPanelBase<T extends DataUser> extends Panel 
 				getAuthSession().signOut();
 				setResponsePage(getApplication().getHomePage());
 			}
-		}.add(new Label("text", getString("data.auth.status.sign_out", null, "Sign out"))));
+		}.add(new Label("text", new ResourceModel("data.auth.status.sign_out", "Sign out"))));
 
-		add(getSignInLink("signIn").add(new Label("text", getString("data.auth.status.sign_in", null, "Sign in"))));
+		add(getSignInLink("signIn").add(new Label("text", new ResourceModel("data.auth.status.sign_in", "Sign in"))));
 	}
 	
 	/** 
