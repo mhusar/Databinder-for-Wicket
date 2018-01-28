@@ -43,7 +43,7 @@ public abstract class AjaxOnKeyPausedUpdater extends AjaxFormComponentUpdatingBe
 	 * Binds to onchange.
 	 */
 	public AjaxOnKeyPausedUpdater() {
-		super("onchange");
+		super("change");
 	}
 
 	/**

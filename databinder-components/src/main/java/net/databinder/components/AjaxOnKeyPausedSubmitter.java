@@ -45,7 +45,7 @@ public abstract class AjaxOnKeyPausedSubmitter extends AjaxFormSubmitBehavior {
 	 * Binds to onchange.
 	 */
 	public AjaxOnKeyPausedSubmitter() {
-		super("onchange");
+		super("change");
 	}
 
 	/**
