@@ -43,9 +43,9 @@ import net.databinder.models.LoadableWritableModel;
  * @author Nathan Hamblen
  */
 public class HibernateObjectModel<T> extends LoadableWritableModel<T> implements BindingModel<T> {
-	private Class objectClass;
+	private Class<T> objectClass;
 	private Serializable objectId;
-	private QueryBuilder queryBuilder;
+	private QueryBuilder<T> queryBuilder;
 	private CriteriaBuilder criteriaBuilder;
 	/** May store unsaved objects between requests. */
 	private T retainedObject;
@@ -60,7 +60,7 @@ public class HibernateObjectModel<T> extends LoadableWritableModel<T> implements
 	 * @param objectClass class to be loaded and stored by Hibernate
 	 * @param entityId id of the persistent object
 	 */
-	public HibernateObjectModel(Class objectClass, Serializable entityId) {
+	public HibernateObjectModel(Class<T> objectClass, Serializable entityId) {
 		this.objectClass = objectClass;
 		this.objectId = entityId;
 	}
@@ -72,7 +72,7 @@ public class HibernateObjectModel<T> extends LoadableWritableModel<T> implements
 	 * and recreated with each request.
 	 * @param objectClass class to be loaded and stored by Hibernate
 	 */
-	public HibernateObjectModel(Class objectClass) {
+	public HibernateObjectModel(Class<T> objectClass) {
 		this.objectClass = objectClass;
 	}
 
@@ -90,10 +90,11 @@ public class HibernateObjectModel<T> extends LoadableWritableModel<T> implements
 	 * Queries that return more than one result will produce exceptions. Queries that return
 	 * no result will produce a null object.
 	 * @param queryString query returning one result
+	 * @param objectClass the class object
 	 * @param queryBinder bind id or other parameters
 	 */
-	public HibernateObjectModel(String queryString, QueryBinder queryBinder) {
-		this(new QueryBinderBuilder(queryString, queryBinder));
+	public HibernateObjectModel(Class<T> objectClass, String queryString, QueryBinder<T> queryBinder) {
+		this(new QueryBinderBuilder<T>(objectClass, queryString, queryBinder));
 	}
 
 	/**
@@ -104,7 +105,7 @@ public class HibernateObjectModel<T> extends LoadableWritableModel<T> implements
 	 * @param objectClass class of object for root criteria
 	 * @param criteriaBuilder builder to apply criteria restrictions
 	 */
-	public HibernateObjectModel(Class objectClass, CriteriaBuilder criteriaBuilder) {
+	public HibernateObjectModel(Class<T> objectClass, CriteriaBuilder criteriaBuilder) {
 		this.objectClass = objectClass;
 		this.criteriaBuilder = criteriaBuilder;
 	}
@@ -115,7 +116,7 @@ public class HibernateObjectModel<T> extends LoadableWritableModel<T> implements
 	 * return no result will produce a null object.
 	 * @param queryBuilder builder to create and bind query object
 	 */
-	public HibernateObjectModel(QueryBuilder queryBuilder) {
+	public HibernateObjectModel(QueryBuilder<T> queryBuilder) {
 		this.queryBuilder = queryBuilder;
 	}
 
@@ -135,7 +136,7 @@ public class HibernateObjectModel<T> extends LoadableWritableModel<T> implements
 	 * @param key session factory key
 	 * @return this, for chaining
 	 */
-	public HibernateObjectModel setFactoryKey(Object key) {
+	public HibernateObjectModel<T> setFactoryKey(Object key) {
 		this.factoryKey = key;
 		return this;
 	}
@@ -146,6 +147,7 @@ public class HibernateObjectModel<T> extends LoadableWritableModel<T> implements
 	 * are removed if present.
 	 * @param object must be an entity contained in the current Hibernate session, or Serializable, or null
 	 */
+	@SuppressWarnings("unchecked")
 	public void setObject(T object) {
 		unbind();	// clear everything but class, name
 		objectClass = null;
@@ -157,7 +159,7 @@ public class HibernateObjectModel<T> extends LoadableWritableModel<T> implements
 			if (sess.contains(object))
 				objectId = sess.getIdentifier(object);
 			else if (retainUnsaved)
-					retainedObject = (T) object;
+					retainedObject = object;
 			setTempModelObject(object);	// skip calling load later
 		}
 	}
@@ -230,7 +232,8 @@ public class HibernateObjectModel<T> extends LoadableWritableModel<T> implements
 		Object o = getObject();
 
 		if (o != null) {
-			Class c = Hibernate.getClass(o);
+			@SuppressWarnings("unchecked")
+			Class<T> c = Hibernate.getClass(o);
 			try {
 				for (Method m : c.getMethods())
 					if (m.isAnnotationPresent(Version.class)
@@ -255,7 +258,7 @@ public class HibernateObjectModel<T> extends LoadableWritableModel<T> implements
 	public boolean equals(Object obj) {
 		Object target = getObject();
 		if (target != null && obj instanceof HibernateObjectModel)
-			return target.equals(((HibernateObjectModel)obj).getObject());
+			return target.equals(((HibernateObjectModel<T>)obj).getObject());
 		return super.equals(obj);
 	}
 	

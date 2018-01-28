@@ -32,29 +32,44 @@ import org.apache.wicket.model.PropertyModel;
 /**
  * DataTable property filter column that works with joined entities instead of string properties.
  * @author Mark Southern
+ * @author ckuehne
+ * 
+ * @param <T> The model object type of the {@link ChoiceFilteredPropertyColumn}
+ * @param <Y> the type of the elements in the list of filterChoices
  */
-// TODO [migration]: could make S (see super class) also a type parameter instead of hardcoding String
 public class ObjectFilteredPropertyColumn<T, Y> extends ChoiceFilteredPropertyColumn<T, Y, String> {
 	private ChoiceRenderer<Y> choiceRenderer;
 	private String displayProperty;
 
-	public ObjectFilteredPropertyColumn(IModel<String> displayModel, String sortProperty, String displayProperty, String propertyExpression, String filterLabelProperty, IModel<List<? extends Y>> filterChoices) {
-		super(displayModel,sortProperty,propertyExpression,filterChoices);
-		choiceRenderer = new ChoiceRenderer<Y>(filterLabelProperty);
+	/**
+	 * @param displayModel
+	 * @param sortProperty
+	 * @param displayProperty
+	 * @param propertyExpression
+	 * @param filterLabelProperty
+	 * @param filterChoices
+	 */
+	public ObjectFilteredPropertyColumn(IModel<String> displayModel, String sortProperty,
+			String displayProperty, String propertyExpression, String filterLabelProperty,
+			IModel<? extends List<? extends Y>> filterChoices) {
+		super(displayModel, sortProperty, propertyExpression, filterChoices);
+		choiceRenderer = new ChoiceRenderer<>(filterLabelProperty);
 		this.displayProperty = displayProperty;
 	}
 
+	@Override
 	protected IChoiceRenderer<Y> getChoiceRenderer() {
 		return choiceRenderer;
 	}
 	
 	@Override
 	public IModel<?> getDataModel(IModel<T> rowModel) {
-		return new PropertyModel(rowModel, displayProperty);
+		return new PropertyModel<>(rowModel, displayProperty);
 	}
 
-	public Component getFilter(String componentId, FilterForm form) {
-		ChoiceFilter cf = (ChoiceFilter) super.getFilter(componentId, form);
+	@Override
+	public Component getFilter(String componentId, FilterForm<?> form) {
+		ChoiceFilter<?> cf = (ChoiceFilter<?>) super.getFilter(componentId, form);
 		cf.getChoice().setNullValid(true);
 		return cf;
 	}

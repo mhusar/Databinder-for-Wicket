@@ -45,7 +45,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.string.Strings;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.QueryException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -101,24 +101,20 @@ public class QueryPanel extends Panel {
 		resultsHolder.setOutputMarkupId(true);
 		add(resultsHolder);
 		
-		Form<QueryBean> form = new Form<QueryBean>("form", new CompoundPropertyModel<QueryBean>(query));
+		Form<QueryBean> form = new Form<>("form", new CompoundPropertyModel<QueryBean>(query));
 		form.setOutputMarkupId(true);
-		form.add(new TextArea("query"));
+		form.add(new TextArea<String>("query"));
 		form.add(new AjaxButton("submit", form) {
 			private static final long serialVersionUID = 1L;
 
-			protected void onSubmit(AjaxRequestTarget target, Form form)
+			protected void onSubmit(AjaxRequestTarget target, Form<?> form)
 			{
 				if (resultsHolder.get("results") != null) {
 					resultsHolder.remove("results");
 				}
 				try {
 					resultsHolder.add(getResultsTable());
-				} catch (QueryException e) {
-					note(e);
-				} catch (IllegalArgumentException e) {
-					note(e);
-				} catch (IllegalStateException e) {
+				} catch (QueryException | IllegalArgumentException | IllegalStateException e) {
 					note(e);
 				}
 				target.add(resultsHolder);
@@ -166,10 +162,9 @@ public class QueryPanel extends Panel {
 					long start = System.nanoTime();
 					try {
 						Query q = sess.createQuery(getQuery());
-						// TODO [migration]: remove narrowing cast after hibernate upgrade?
-						q.setFirstResult((int)first);
-						q.setMaxResults((int)count);
-						return q.iterate();
+						q.setFirstResult((int) first);
+						q.setMaxResults((int) count);
+						return q.list().iterator();
 					} finally {
 						float nanoTime = ((System.nanoTime()-start) / 1000) / 1000.0f;
 						setExecutionInfo("query executed in "+nanoTime+" ms: "+getQuery());

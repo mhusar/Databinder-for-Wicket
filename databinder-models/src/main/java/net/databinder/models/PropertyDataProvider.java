@@ -32,7 +32,11 @@ public abstract class PropertyDataProvider<T> implements IDataProvider<T> {
 	/** Controls wrapping with a compound property model. */
 	private boolean wrapWithPropertyModel = true;
 	
-	public PropertyDataProvider setWrapWithPropertyModel(boolean wrapWithPropertyModel) {
+	/**
+	 * @param wrapWithPropertyModel
+	 * @return this
+	 */
+	public PropertyDataProvider<T> setWrapWithPropertyModel(boolean wrapWithPropertyModel) {
 		this.wrapWithPropertyModel = wrapWithPropertyModel;
 		return this;
 	}
@@ -46,7 +50,7 @@ public abstract class PropertyDataProvider<T> implements IDataProvider<T> {
 	public IModel<T> model(T object) {
 		IModel<T> model = dataModel(object);
 		if (wrapWithPropertyModel)
-			model = new CompoundPropertyModel<T>(model);
+			model = new CompoundPropertyModel<>(model);
 		return model;
 	}
 	

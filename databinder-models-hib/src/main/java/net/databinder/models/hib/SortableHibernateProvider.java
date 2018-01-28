@@ -33,33 +33,25 @@ import org.apache.wicket.extensions.markup.html.repeater.data.table.ISortableDat
  */
 
 public class SortableHibernateProvider<T, S> extends HibernateProvider<T> implements ISortableDataProvider<T, S > {
+	private static final long serialVersionUID = 1L;
 
-    private ISortStateLocator sortStateLocator = null;
+	private ISortStateLocator<S> sortStateLocator = null;
 
-    private ISortState sortState;
+    private ISortState<S> sortState;
 
 	public SortableHibernateProvider(Class<T> objectClass, CriteriaBuilder criteriaBuilder, CriteriaBuilder orderingCriteriaBuilder) {
         super(objectClass, criteriaBuilder, orderingCriteriaBuilder);
         if (orderingCriteriaBuilder instanceof ISortStateLocator)
-            sortStateLocator = (ISortStateLocator) orderingCriteriaBuilder;
+            sortStateLocator = (ISortStateLocator<S>) orderingCriteriaBuilder;
     }
 
     public SortableHibernateProvider(Class<T> objectClass, OrderingCriteriaBuilder criteriaBuilder) {
         super(objectClass, criteriaBuilder);
         if (criteriaBuilder instanceof ISortStateLocator)
-            sortStateLocator = (ISortStateLocator) criteriaBuilder;
+            sortStateLocator = (ISortStateLocator<S>) criteriaBuilder;
     }
 
-    public ISortState getSortState() {
+    public ISortState<S> getSortState() {
         return (sortStateLocator != null) ? sortStateLocator.getSortState() : sortState;
     }
-
-//    public void setSortState(ISortState state) {
-//        if (sortStateLocator != null) {
-//            sortStateLocator.setSortState(state);
-//        }
-//        else {
-//            this.sortState = state;
-//        }
-//    }
 }

@@ -1,5 +1,7 @@
 package net.databinder.models.hib;
 
+import java.io.Serializable;
+
 /*---
  Copyright 2008 The Scripps Research Institute
  http://www.scripps.edu
@@ -60,17 +62,23 @@ import org.hibernate.criterion.Restrictions;
  * 
  * @author Mark Southern
  */
-// TODO [migration]: try to make work with ObjectFilteredPropertyColumn.
-public class CriteriaFilterAndSort extends CriteriaBuildAndSort implements IFilterStateLocator {
+public class CriteriaFilterAndSort extends CriteriaBuildAndSort<Map<String, Serializable>> implements IFilterStateLocator<Map<String, Serializable>> {
 
     // whitespace, a qualifier, a number surrounded by whitespace
     private Pattern pattern = Pattern.compile("^(\\s+)?([><]=?)(\\s+)?(.*)(\\s+)?");
 
-    private Map<String, String> filterMap = new HashMap<String, String>();
+    private Map<String, Serializable> filterMap = new HashMap<>();
 
-    private Object bean;
+    private Serializable bean;
 
-    public CriteriaFilterAndSort(Object bean, String defaultSortProperty, boolean sortAscending, boolean sortCased) {
+    /**
+     * 
+     * @param bean
+     * @param defaultSortProperty
+     * @param sortAscending
+     * @param sortCased
+     */
+    public CriteriaFilterAndSort(Serializable bean, String defaultSortProperty, boolean sortAscending, boolean sortCased) {
         super(defaultSortProperty, sortAscending, sortCased);
         this.bean = bean;
     }
@@ -80,18 +88,25 @@ public class CriteriaFilterAndSort extends CriteriaBuildAndSort implements IFilt
 
         Conjunction conj = Restrictions.conjunction();
 
-        for (Map.Entry<String, String> entry : (Set<Map.Entry<String, String>>) filterMap.entrySet()) {
-            // System.out.println(String.format("%s\t%s", entry.getKey(), entry.getValue()));
+        for (Map.Entry<String, Serializable> entry : (Set<Map.Entry<String, Serializable>>) filterMap.entrySet()) {
             String property = entry.getKey();
-            String value = entry.getValue();
+            Serializable value = entry.getValue();
             if (value == null)
                 continue;
+            
+			// for object filtered columns
+			if (!(value instanceof String)) {
+				conj.add(Restrictions.eq(property, value));
+				criteria.add(conj);
+				continue;
+			}
+            String stringValue = (String) value;
 
             String prop = processProperty(criteria, property);
-            Class clazz = PropertyResolver.getPropertyClass(property, bean);
+            Class<?> clazz = PropertyResolver.getPropertyClass(property, bean);
 
             if (String.class.isAssignableFrom(clazz)) {
-                String[] items = value.split("\\s+");
+                String[] items = stringValue.split("\\s+");
                 for (String item : items) {
                     Disjunction dist = Restrictions.disjunction();
                     dist.add(Restrictions.ilike(prop, item, MatchMode.ANYWHERE));
@@ -100,11 +115,11 @@ public class CriteriaFilterAndSort extends CriteriaBuildAndSort implements IFilt
             }
             else if (Number.class.isAssignableFrom(clazz)) {
                 try {
-                    Matcher matcher = pattern.matcher(value);
+                    Matcher matcher = pattern.matcher(stringValue);
                     if (matcher.matches()) {
                         String qualifier = matcher.group(2);
-                        value = matcher.group(4);
-                        Number num = convertToNumber(value, clazz);
+                        stringValue = matcher.group(4);
+                        Number num = convertToNumber(stringValue, clazz);
                         if (">".equals(qualifier))
                             conj.add(Restrictions.gt(prop, num));
                         else if ("<".equals(qualifier))
@@ -115,32 +130,31 @@ public class CriteriaFilterAndSort extends CriteriaBuildAndSort implements IFilt
                             conj.add(Restrictions.le(prop, num));
                     }
                     else
-                        conj.add(Restrictions.eq(prop, convertToNumber(value, clazz)));
+                        conj.add(Restrictions.eq(prop, convertToNumber(stringValue, clazz)));
                 }
                 catch(ConversionException ex) {
                     // ignore filter in this case
                 }
             }
             else if (Boolean.class.isAssignableFrom(clazz)) {
-                conj.add(Restrictions.eq(prop, Boolean.parseBoolean(value)));
+                conj.add(Restrictions.eq(prop, Boolean.parseBoolean(stringValue)));
             }
         }
         criteria.add(conj);
     }
     
-    protected Number convertToNumber(String value, Class clazz) {
+    protected Number convertToNumber(String value, Class<?> clazz) {
       return (Number)
         new PropertyResolverConverter(Application.get().getConverterLocator(), Session.get().getLocale())
           .convert(value, clazz);
     }
     
-    public Object getFilterState() {
+    public Map<String, Serializable> getFilterState() {
         return filterMap;
     }
 
-    @SuppressWarnings("unchecked")
-	public void setFilterState(Object filterMap) {
-        this.filterMap = (Map) filterMap;
+	public void setFilterState(Map<String, Serializable> filterMap) {
+        this.filterMap = filterMap;
     }
 
 }

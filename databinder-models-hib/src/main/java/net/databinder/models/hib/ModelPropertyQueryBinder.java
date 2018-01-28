@@ -2,7 +2,7 @@ package net.databinder.models.hib;
 
 import org.apache.wicket.model.IDetachable;
 import org.apache.wicket.model.IModel;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 
 /**
  * A query binder that sets query parameters to corresponding properties taken
@@ -10,14 +10,18 @@ import org.hibernate.Query;
  * 
  * @author Jonathan
  */
-public class ModelPropertyQueryBinder extends AbstractPropertyQueryBinder
+public class ModelPropertyQueryBinder<R, T> extends AbstractPropertyQueryBinder<R, T>
 		implements IDetachable {
 
 	private static final long serialVersionUID = -6544558086991812867L;
 
-	protected final IModel model;
+	protected final IModel<T> model;
 
-	public ModelPropertyQueryBinder(final IModel model) {
+	/**
+	 * 
+	 * @param model the model
+	 */
+	public ModelPropertyQueryBinder(final IModel<T> model) {
 		this.model = model;
 	}
 
@@ -25,7 +29,7 @@ public class ModelPropertyQueryBinder extends AbstractPropertyQueryBinder
 		model.detach();
 	}
 
-	public void bind(final Query query) {
+	public void bind(final Query<R> query) {
 		bind(query, model.getObject());
 	}
 }

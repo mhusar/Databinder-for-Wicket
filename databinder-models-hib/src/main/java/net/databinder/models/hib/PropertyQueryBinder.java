@@ -1,31 +1,37 @@
 package net.databinder.models.hib;
 
-import org.hibernate.Query;
+import java.io.Serializable;
+
+import org.hibernate.query.Query;
 
 /**
  * Binds a query's parameters to the properties of an object, as needed.
  * 
+ * @param R the result type of the query
+ * @param T the type of the object to bind
+ * 
  * @author Jonathan
+ * @author ckuehne
  */
-public class PropertyQueryBinder extends AbstractPropertyQueryBinder {
+public class PropertyQueryBinder<R, T extends Serializable> extends AbstractPropertyQueryBinder<R, T> {
 
-	private static final long serialVersionUID = -5670443203499179555L;
+	private static final long serialVersionUID = 1L;
 
-	private final Object object;
+	private final T t;
 
 	/**
 	 * @param object
 	 *            The object to bind properties of
 	 */
-	public PropertyQueryBinder(final Object object) {
-		this.object = object;
+	public PropertyQueryBinder(final T t) {
+		this.t = t;
 	}
 
 	/**
 	 * @param query
 	 *            The query to bind
 	 */
-	public void bind(final Query query) {
-		bind(query, object);
+	public void bind(final Query<R> query) {
+		bind(query, t);
 	}
 }

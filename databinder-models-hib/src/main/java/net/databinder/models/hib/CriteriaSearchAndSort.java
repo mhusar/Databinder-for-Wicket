@@ -51,13 +51,14 @@ import org.hibernate.criterion.Restrictions;
  * 
  * @author Mark Southern
  */
-public class CriteriaSearchAndSort extends CriteriaBuildAndSort {
+public class CriteriaSearchAndSort<T> extends CriteriaBuildAndSort<T> {
+	private static final long serialVersionUID = 1L;
 
-    private String[] searchProperties;
+	private String[] searchProperties;
 
-    private IModel searchTextModel;
+    private IModel<String> searchTextModel;
 
-    public CriteriaSearchAndSort(IModel searchTextModel, String[] searchProperties, String defaultSortProperty,
+    public CriteriaSearchAndSort(IModel<String> searchTextModel, String[] searchProperties, String defaultSortProperty,
             boolean sortAscending, boolean sortCased) {
         super(defaultSortProperty, sortAscending, sortCased);
         this.searchTextModel = searchTextModel;
@@ -67,12 +68,12 @@ public class CriteriaSearchAndSort extends CriteriaBuildAndSort {
     public void buildUnordered(Criteria criteria) {
         super.buildUnordered(criteria);
 
-        String searchText = (String) searchTextModel.getObject();
+        String searchText = searchTextModel.getObject();
         if (searchText != null) {
             String[] items = searchText.split("\\s+");
             Conjunction conj = Restrictions.conjunction();
 
-            List<String> properties = new ArrayList<String>();
+            List<String> properties = new ArrayList<>();
             for (String prop : getSearchProperties())
                 properties.add(processProperty(criteria, prop));
 

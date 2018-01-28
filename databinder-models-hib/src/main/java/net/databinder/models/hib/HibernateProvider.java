@@ -24,6 +24,7 @@ import org.apache.wicket.model.IModel;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
+import org.hibernate.query.Query;
 
 import net.databinder.hib.Databinder;
 import net.databinder.models.PropertyDataProvider;
@@ -39,16 +40,17 @@ import net.databinder.models.PropertyDataProvider;
  * @author Nathan Hamblen
  */
 public class HibernateProvider<T> extends PropertyDataProvider<T> {
-	private Class objectClass;
+	private Class<T> objectClass;
 	private OrderingCriteriaBuilder criteriaBuilder;
-	private QueryBuilder queryBuilder, countQueryBuilder;
+	private QueryBuilder<T> queryBuilder;
+	private QueryBuilder<Number> countQueryBuilder;
 	
 	private Object factoryKey;
 	
 	/**
 	 * Provides all entities of the given class.
 	 */
-	public HibernateProvider(Class objectClass) {
+	public HibernateProvider(Class<T> objectClass) {
 		this.objectClass = objectClass;
 	}
 	
@@ -58,7 +60,8 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 	 * @param criteriaBuilder base criteria builder
 	 * @param criteriaOrderer add ordering information ONLY, base criteria will be called first
 	 */
-	public HibernateProvider(Class objectClass, final CriteriaBuilder criteriaBuilder, final CriteriaBuilder criteriaOrderer) {
+	@SuppressWarnings("serial")
+	public HibernateProvider(Class<T> objectClass, final CriteriaBuilder criteriaBuilder, final CriteriaBuilder criteriaOrderer) {
 		this(objectClass);
 		this.criteriaBuilder = new OrderingCriteriaBuilder() {
 			public void buildOrdered(Criteria criteria) {
@@ -76,13 +79,13 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 	 * @param objectClass
 	 * @param criteriaBuider builds different criteria objects for iterator() and size()
 	 */
-	public HibernateProvider(Class objectClass, OrderingCriteriaBuilder criteriaBuider) {
+	public HibernateProvider(Class<T> objectClass, OrderingCriteriaBuilder criteriaBuider) {
 		this(objectClass);
 		this.criteriaBuilder = criteriaBuider;
 	}
 
 	/** Provides entities of the given class meeting the supplied criteria. */
-	public HibernateProvider(Class objectClass, final CriteriaBuilder criteriaBuilder) {
+	public HibernateProvider(Class<T> objectClass, final CriteriaBuilder criteriaBuilder) {
 		this(objectClass, new OrderingCriteriaBuilder() {
 			public void buildOrdered(Criteria criteria) {
 				criteriaBuilder.build(criteria);
@@ -98,15 +101,15 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 	 * is derived by prefixing "select count(*)" to the given query; this will fail if 
 	 * the supplied query has a select clause.
 	 */
-	public HibernateProvider(String query) {
-		this(query, makeCount(query));
+	public HibernateProvider(Class<T> objectClass, String query) {
+		this(objectClass, query, makeCount(query));
 	}
 	
 	/**
 	 * Provides entities matching the given queries.
 	 */
-	public HibernateProvider(final String query, final String countQuery) {
-		this(new QueryBinderBuilder(query), new QueryBinderBuilder(countQuery));
+	public HibernateProvider(Class<T> objectClass, final String query, final String countQuery) {
+		this(new QueryBinderBuilder<T>(objectClass, query), new QueryBinderBuilder<Number>(Number.class, countQuery));
 	}
 	
 	/**
@@ -115,8 +118,8 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 	 * the supplied query has a select clause.
 	 * @deprecated because the derived count query is often non-standard, even if it works. Use the longer constructor.
 	 */
-	public HibernateProvider(String query, QueryBinder queryBinder) {
-		this(query, queryBinder, makeCount(query), queryBinder);
+	public HibernateProvider(Class<T> objectClass, String query, QueryBinder queryBinder) {
+		this(objectClass, query, queryBinder, makeCount(query), queryBinder);
 	}
 
 	/**
@@ -126,11 +129,11 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 	 * @param countQuery query to return count of entities
 	 * @param countQueryBinder binder for the count query (may be same as queryBinder)
 	 */
-	public HibernateProvider(final String query, final QueryBinder queryBinder, final String countQuery, final QueryBinder countQueryBinder) {
-		this(new QueryBinderBuilder(query, queryBinder), new QueryBinderBuilder(countQuery, countQueryBinder));
+	public HibernateProvider(Class<T> objectClass, String query, final QueryBinder<T> queryBinder, final String countQuery, final QueryBinder<Number> countQueryBinder) {
+		this(new QueryBinderBuilder<T>(objectClass, query, queryBinder), new QueryBinderBuilder<Number>(Number.class, countQuery, countQueryBinder));
 	}
 	
-	public HibernateProvider(QueryBuilder queryBuilder, QueryBuilder countQueryBuilder) {
+	public HibernateProvider(QueryBuilder<T> queryBuilder, QueryBuilder<Number> countQueryBuilder) {
 		this.queryBuilder = queryBuilder;
 		this.countQueryBuilder = countQueryBuilder;
 	}
@@ -153,7 +156,7 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 	 * @param key session factory key
 	 * @return this, for chaining
 	 */
-	public HibernateProvider setFactoryKey(Object key) {
+	public HibernateProvider<T> setFactoryKey(Object key) {
 		this.factoryKey = key;
 		return this;
 	}
@@ -162,12 +165,11 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 	 * It should not normally be necessary to override (or call) this default implementation.
 	 */
 	@Override
-	@SuppressWarnings("unchecked") // TODO [migration]: add checked conversion
 	public Iterator<? extends T> iterator(long first, long count) {
 		Session sess =  Databinder.getHibernateSession(factoryKey);
 		
 		if(queryBuilder != null) {
-			org.hibernate.Query q = queryBuilder.build(sess);
+			Query<T> q = queryBuilder.build(sess);
 			q.setFirstResult((int)first);
 			q.setMaxResults((int)count);
 			return q.iterate();
@@ -190,9 +192,8 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 		Session sess =  Databinder.getHibernateSession(factoryKey);
 
 		if(countQueryBuilder != null) {
-			org.hibernate.Query q = countQueryBuilder.build(sess);
-			Object obj = q.uniqueResult();
-			return ((Number) obj).intValue();
+			Query<Number> q = countQueryBuilder.build(sess);
+			return q.uniqueResult().intValue();
 		}
 		
 		Criteria crit = sess.createCriteria(objectClass);
@@ -207,7 +208,7 @@ public class HibernateProvider<T> extends PropertyDataProvider<T> {
 
 	@Override
 	protected IModel<T> dataModel(T object) {
-		return new HibernateObjectModel<T>(object);
+		return new HibernateObjectModel<>(object);
 	}
 	
 	/** does nothing */

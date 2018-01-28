@@ -21,19 +21,23 @@ package net.databinder.models.hib;
 
 import java.io.Serializable;
 
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Session;
 
 /**
  * Interface for callback that builds a Hibernate Query and binds it to parameters if necessary.
  * Use for SQL queries, named queries, etc.
+ * 
+ * @param R the type of the query result
+ * 
  * @author Nathan Hamblen
  */
-public interface QueryBuilder extends Serializable {
+public interface QueryBuilder<R> extends Serializable {
+
 	/**
 	 * Create query from session and bind it to parameters.
 	 * @param hibernateSession session for the current request cycle
 	 * @return ready-to-use query
 	 */
-	Query build(Session hibernateSession);
+	Query<R> build(Session hibernateSession);
 }

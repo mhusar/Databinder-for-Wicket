@@ -27,29 +27,31 @@ import net.databinder.models.hib.QueryBinder;
  * implement the onUpdate method to register external components for updating.
  * It is possible to override the search button text with the key "searchbutton.text"
  * The SearchPanel model maps to the text of the search.
+ * 
+ * @param <T> the type of the search result
  * @author Nathan Hamblen
  */
-public abstract class SearchPanel extends Panel {
+public abstract class SearchPanel<T> extends Panel {
 
-	private TextField search;
+	private TextField<String> search;
 
 	/**
 	 * @param id Wicket id
 	 */
 	public SearchPanel(final String id) {
-		super(id, new Model());
+		super(id, new Model<>());
 		add(new SearchForm("searchForm"));
 	}
 
 	/** Use the given model (must not be read-only ) for the search string */
-	public SearchPanel(final String id, final IModel searchModel) {
+	public SearchPanel(final String id, final IModel<String> searchModel) {
 		super(id, searchModel);
 		add(new SearchForm("searchForm"));
 	}
 
 	@Override
 	/** Sets model to search component. */
-	public MarkupContainer setDefaultModel(final IModel model) {
+	public MarkupContainer setDefaultModel(final IModel<?> model) {
 		return search.setDefaultModel(model);
 	}
 
@@ -70,8 +72,8 @@ public abstract class SearchPanel extends Panel {
 	 * to your own IQueryBinder instance; this is a convenience method.
 	 * @return binder for a "search" parameter
 	 */
-	public QueryBinder getQueryBinder() {
-		return new PropertyQueryBinder(this);
+	public QueryBinder<T> getQueryBinder() {
+		return new PropertyQueryBinder<>(this);
 	}
 
 	/**
@@ -118,20 +120,20 @@ public abstract class SearchPanel extends Panel {
   }
 
   /** Form with AJAX components and their AjaxCells. */
-	public class SearchForm extends Form {
+	public class SearchForm extends Form<String> {
 		@SuppressWarnings("unchecked")
 		public SearchForm(final String id) {
 			super(id);
 
 			final AjaxCell searchWrap = new AjaxCell("searchWrap");
 			add(searchWrap);
-			search = new TextField("searchInput", SearchPanel.this.getDefaultModel());
+			search = new TextField<>("searchInput", (IModel<String>) SearchPanel.this.getDefaultModel());
 			search.setOutputMarkupId(true);
 			searchWrap.add(search);
 
 			final AjaxCell clearWrap = new AjaxCell("clearWrap");
 			add(clearWrap);
-			final AjaxLink clearLink = new AjaxLink("clearLink") {
+			final AjaxLink<?> clearLink = new AjaxLink<Void>("clearLink") {
 				/** Clear field and register updates. */
 				@Override
         public void onClick(final AjaxRequestTarget target) {
