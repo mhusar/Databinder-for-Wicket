@@ -1,5 +1,7 @@
 package net.databinder.dispatch.times
 
+import net.databinder.dispatch._
+
 trait Times {
   lazy val http = new Http("api.nytimes.com")
   val api_key: String

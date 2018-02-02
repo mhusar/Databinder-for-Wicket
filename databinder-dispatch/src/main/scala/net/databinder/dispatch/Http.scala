@@ -113,7 +113,7 @@ class Http(
     /** Handle response entity in thunk if OK. */
     def okee [T] (thunk: HttpEntity => T): T = ok { 
       case (_, Some(ent)) => thunk(ent)
-      case (res, _) => error("response has no entity: " + res)
+      case (res, _) => sys.error("response has no entity: " + res)
     }
     /** Handle InputStream in thunk if OK. */
     def >> [T] (thunk: InputStream => T) = okee (ent => thunk(ent.getContent))

@@ -4,6 +4,8 @@ import java.io.InputStream
 import java.net.URLEncoder.encode
 import org.apache.http.HttpHost
 
+import net.databinder.dispatch._
+
 trait Doc extends Schema {
   val _id = String(Symbol("_id")) 
   val _rev = String(Symbol("_rev"))

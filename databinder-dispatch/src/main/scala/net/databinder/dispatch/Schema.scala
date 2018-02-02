@@ -1,5 +1,7 @@
 package net.databinder.dispatch
 
+import net.databinder.dispatch._
+
 trait Schema {
   def loc(base: Option[Map[Symbol, Option[Any]]], sub_sym: Symbol) = 
     (base flatMap { _.getOrElse(sub_sym, None) })

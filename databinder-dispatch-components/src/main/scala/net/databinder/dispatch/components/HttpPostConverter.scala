@@ -17,7 +17,7 @@ import net.sf.ehcache.Element
 
 import net.databinder.dispatch.Http
 
-abstract class HttpPostConverter extends AbstractConverter[String] {
+abstract class HttpPostConverter extends AbstractConverter {
 
   def service = new Http("localhost", 8180)
   def path_name: String
@@ -31,7 +31,7 @@ abstract class HttpPostConverter extends AbstractConverter[String] {
       (service("/" + path_name) << Map("input" -> source)).as_str
     }  
   } catch { 
-    case e => 
+    case e : Throwable => 
       HttpPostConverter.log.error("Error posting to server", e);
       Application.get.getConfigurationType match {
         case Application.DEVELOPMENT => 
