@@ -59,8 +59,8 @@
    <plugin>
     <artifactId>maven-compiler-plugin</artifactId>
     <configuration>
-     <source>1.5</source>
-     <target>1.5</target>
+     <source>1.8</source>
+     <target>1.8</target>
      <showDeprecation>true</showDeprecation>
      <showWarnings>true</showWarnings>
     </configuration>
@@ -81,7 +81,7 @@
     <artifactId>maven-javadoc-plugin</artifactId>
     <configuration>
      <aggregate>true</aggregate>
-     <source>1.5</source>
+     <source>1.8</source>
      <linksource>true</linksource>
     </configuration>
    </plugin>

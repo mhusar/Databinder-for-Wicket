@@ -112,9 +112,13 @@ public abstract class DataApplicationBase extends WebApplication {
 		
 		this.cookielessSupported = cookielessSupported;
 		
-		if (getApplicationSettings().getPageExpiredErrorPage().equals(expected))
-			getApplicationSettings().setPageExpiredErrorPage(cookielessSupported ?
-					PageExpiredErrorPage.class : PageExpiredCookieless.class);
+		if (getApplicationSettings().getPageExpiredErrorPage().equals(expected)) {
+			if (cookielessSupported) {
+				getApplicationSettings().setPageExpiredErrorPage(PageExpiredCookieless.class);
+			} else {
+				getApplicationSettings().setPageExpiredErrorPage(PageExpiredErrorPage.class);
+			}
+		}
 	}
 	
 	/**
