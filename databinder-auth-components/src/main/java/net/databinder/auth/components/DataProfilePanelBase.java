@@ -34,12 +34,8 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.Session;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.*;
 import org.apache.wicket.markup.html.border.Border;
-import org.apache.wicket.markup.html.form.CheckBox;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.RequiredTextField;
-import org.apache.wicket.markup.html.form.SimpleFormComponentLabel;
 import org.apache.wicket.markup.html.form.validation.FormComponentFeedbackBorder;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -69,15 +65,15 @@ public abstract class DataProfilePanelBase<T extends DataUser> extends Panel {
 	private ReturnPage returnPage;
 	private Form<T> form;
 	private RequiredTextField<String> username;
-	private RSAPasswordTextField password, passwordConfirm;
+	private PasswordTextField password, passwordConfirm;
 	private CheckBox rememberMe;
 	
 	/** @return component used in base page, if needed in subclass */
 	protected RequiredTextField getUsername() { return username; }
 	/** @return component used in base page, if needed in subclass */
-	protected RSAPasswordTextField getPassword() { return password; }
+	protected PasswordTextField getPassword() { return password; }
 	/** @return component used in base page, if needed in subclass */
-	protected RSAPasswordTextField getPasswordConfirm() { return passwordConfirm; }
+	protected PasswordTextField getPasswordConfirm() { return passwordConfirm; }
 	/** @return component used in base page, if needed in subclass */
 	protected CheckBox getRememberMe() { return rememberMe; }
 	/** @return form used in base page, if needed elsewhere */
@@ -117,7 +113,7 @@ public abstract class DataProfilePanelBase<T extends DataUser> extends Panel {
 			username.setLabel(new ResourceModel("data.auth.username", "Username"));
 			add(new SimpleFormComponentLabel("username-label", username));
 			add(feedbackBorder("password-border")
-					.add(password = new RSAPasswordTextField("password", new Model<String>(), form) {
+					.add(password = new PasswordTextField("password", new Model<String>()) {
 				public boolean isRequired() {
 					return !existing();
 				}
@@ -125,7 +121,7 @@ public abstract class DataProfilePanelBase<T extends DataUser> extends Panel {
 			password.setLabel(new ResourceModel("data.auth.password", "Password"));
 			add(new SimpleFormComponentLabel("password-label", password));
 			add(feedbackBorder("passwordConfirm-border")
-					.add(passwordConfirm = new RSAPasswordTextField("passwordConfirm", new Model<String>(), form) {
+					.add(passwordConfirm = new PasswordTextField("passwordConfirm", new Model<String>()) {
 				public boolean isRequired() {
 					return !existing();
 				}

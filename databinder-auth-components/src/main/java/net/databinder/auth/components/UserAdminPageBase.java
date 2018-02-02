@@ -20,12 +20,7 @@ import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Button;
-import org.apache.wicket.markup.html.form.CheckBoxMultipleChoice;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.RequiredTextField;
-import org.apache.wicket.markup.html.form.SimpleFormComponentLabel;
-import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.form.*;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IChainingModel;
@@ -69,7 +64,7 @@ public abstract class UserAdminPageBase<T extends DataUser> extends WebPage {
 		form.add(new SimpleFormComponentLabel("username-label", username));
 		form.add(username);
 
-		TextField<String> password = new RSAPasswordTextField("password", new Model<String>(), form) {
+		TextField<String> password = new PasswordTextField("password", new Model<String>()) {
 			@Override
 			public boolean isRequired() {
 				return !isBound();
@@ -82,7 +77,7 @@ public abstract class UserAdminPageBase<T extends DataUser> extends WebPage {
 		password.setLabel(new ResourceModel("data.auth.password", "Password"));
 		form.add(new SimpleFormComponentLabel("password-label", password));
 		form.add(password);
-		TextField<String> passwordConfirm = new RSAPasswordTextField("passwordConfirm", new Model<String>(), form) {
+		TextField<String> passwordConfirm = new PasswordTextField("passwordConfirm", new Model<String>()) {
 			public boolean isRequired() {
 				return !isBound();
 			}

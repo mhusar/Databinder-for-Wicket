@@ -27,10 +27,7 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.Session;
 import org.apache.wicket.markup.html.border.Border;
-import org.apache.wicket.markup.html.form.CheckBox;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.RequiredTextField;
-import org.apache.wicket.markup.html.form.SimpleFormComponentLabel;
+import org.apache.wicket.markup.html.form.*;
 import org.apache.wicket.markup.html.form.validation.FormComponentFeedbackBorder;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -68,10 +65,10 @@ public class DataSignInPanel<T extends DataUser> extends Panel {
 	protected class SignInForm extends Form {
 		private CheckBox rememberMe;
 		private RequiredTextField<String> username;
-		private RSAPasswordTextField password;
+		private PasswordTextField password;
 		
 		protected RequiredTextField getUsername() { return username; }
-		protected RSAPasswordTextField getPassword() { return password; }
+		protected PasswordTextField getPassword() { return password; }
 		protected CheckBox getRememberMe() { return rememberMe; }
 		
 		protected SignInForm(String id) {
@@ -82,7 +79,7 @@ public class DataSignInPanel<T extends DataUser> extends Panel {
 			username.setLabel(new ResourceModel("data.auth.username", "Username"));
 			add(new SimpleFormComponentLabel("username-label", username));
 			add(feedbackBorder("password-border")
-					.add(password = new RSAPasswordTextField("password", new Model<String>(), this)));
+					.add(password = new PasswordTextField("password", new Model<String>())));
 			password.setRequired(true);
 			password.setLabel(new ResourceModel("data.auth.password", "Password"));
 			add(new SimpleFormComponentLabel("password-label", password));
