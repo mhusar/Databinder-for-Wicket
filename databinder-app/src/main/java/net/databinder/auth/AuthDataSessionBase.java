@@ -44,8 +44,7 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
 	private IModel<T> userModel;
 	private static final String CHARACTER_ENCODING = "UTF-8";
 	
-	/** Cookie utils with default settings */
-	private CookieUtils signInCookieUtils;
+	private transient CookieUtils signInCookieUtils;
 
 	/**
 	 * Initialize new session.
