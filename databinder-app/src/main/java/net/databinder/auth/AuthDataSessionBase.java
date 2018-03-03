@@ -107,7 +107,7 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
 		T potential = getUser(username);
 		if (potential != null && (potential).getPassword().matches(password))
 			signIn(potential, setCookie);
-		
+		replaceSession();
 		return userModel != null;
 	}
 
@@ -212,7 +212,7 @@ public abstract class AuthDataSessionBase<T extends DataUser> extends WebSession
   /** Signs out and invalidates session. */	
 	public void signOut() {
 		clearUser();
-		getSessionStore().invalidate(RequestCycle.get().getRequest());
+		invalidate();
 	}
 	
 	private CookieUtils getSignInCookieUtils() {
