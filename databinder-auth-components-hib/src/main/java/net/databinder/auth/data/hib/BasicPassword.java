@@ -37,7 +37,8 @@ public class BasicPassword implements DataPassword, Serializable {
 		md.update(passwordHash.getBytes());
 	}
 	
-	@Column(length = 28, nullable = false)
+	// length = 4 * ceil(sha-512-hash.length / 3) = 88, because of base64 encoding
+	@Column(length = 88, nullable = false)
 	private String getPasswordHash() {
 		return passwordHash;
 	}
