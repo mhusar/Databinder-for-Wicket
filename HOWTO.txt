@@ -1,0 +1,5 @@
+1) Install OpenJDK 7 from somewhere. Maybe old RPM packages.
+2) Set JAVA_HOME to JDK directory.
+     export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.75-2.5.4.2.fc20.x86_64/
+3) mvn clean compile package install
+
