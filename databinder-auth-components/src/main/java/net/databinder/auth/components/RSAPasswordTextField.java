@@ -65,7 +65,11 @@ public class RSAPasswordTextField extends PasswordTextField implements IHeaderCo
 	private static KeyPair keypair;
 	static {
 		try {
-			keypair = KeyPairGenerator.getInstance("RSA").genKeyPair();
+			KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+			// Force keysize 1024. RSA.js crashes with larger keysizes.
+			// TODO: 1024 is not state-of-the-art anymore. Increase!
+			kpg.initialize(1024);
+			keypair = kpg.genKeyPair();
 		} catch (NoSuchAlgorithmException e) {
 			throw new WicketRuntimeException("Can't find RSA provider", e);
 		}
