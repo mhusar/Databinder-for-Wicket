@@ -133,7 +133,7 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 	 * @param config used to build Hibernate session factory
 	 */
 	protected	void configureHibernate(Configuration config) {
-			if (isDevelopment())
+			if (isUpdateHbm2ddlAuto())
 				config.setProperty("hibernate.hbm2ddl.auto", "update");
 			else {
 				config
@@ -143,7 +143,18 @@ public abstract class DataApplication extends DataApplicationBase implements Hib
 					.setProperty("hibernate.c3p0.idle_test_period", "300");
 			}
 	}
-	
+
+	/**
+	 * If hibernate.hbm2ddl.auto should be set to 'update'.
+	 * This impl returns <code>isDevelopment()</code>.
+	 * Override for different setting.
+	 *
+	 * @return {@link #isDevelopment()}
+	 */
+	protected boolean isUpdateHbm2ddlAuto() {
+		return isDevelopment();
+	}
+
 	/**
 	 * @param key object, or null for the default factory
 	 * @return the retained session factory
