@@ -118,9 +118,9 @@
   </plugins>
  </reporting>
  <scm>
-  <url>http://github.com/kryptt/Databinder-for-Wicket</url>
-  <connection>scm:git:git://github.com/kryptt/Databinder-for-Wicket.git</connection>
-  <developerConnection>scm:git:ssh://git@github.com/kryptt/Databinder-for-Wicket.git</developerConnection>
+  <url>http://github.com/ckuehne/Databinder-for-Wicket</url>
+  <connection>scm:git:git://github.com/ckuehne/Databinder-for-Wicket.git</connection>
+  <developerConnection>scm:git:ssh://git@github.com/ckuehne/Databinder-for-Wicket.git</developerConnection>
  </scm>
  <distributionManagement>
   <repository>
