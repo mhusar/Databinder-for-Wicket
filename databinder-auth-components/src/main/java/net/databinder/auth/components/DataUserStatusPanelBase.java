@@ -18,6 +18,10 @@
  */
 package net.databinder.auth.components;
 
+import net.databinder.auth.AuthApplication;
+import net.databinder.auth.AuthSession;
+import net.databinder.auth.components.DataSignInPageBase.ReturnPage;
+import net.databinder.auth.data.DataUser;
 import org.apache.wicket.Page;
 import org.apache.wicket.authroles.authorization.strategies.role.Roles;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -28,11 +32,6 @@ import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.ResourceModel;
-
-import net.databinder.auth.AuthApplication;
-import net.databinder.auth.AuthSession;
-import net.databinder.auth.components.DataSignInPageBase.ReturnPage;
-import net.databinder.auth.data.DataUser;
 
 /**
  * Displays sign in and out links, as well as current user if any.
@@ -84,6 +83,13 @@ public abstract class DataUserStatusPanelBase<T extends DataUser> extends Panel 
 				return user != null && user.hasRole(Roles.ADMIN);
 			}
 		}.add(new Label("text", new ResourceModel("data.auth.status.admin", "Admin"))));
+
+		wrapper.add(new Link("home") {
+			@Override
+			public void onClick() {
+				setResponsePage(getApplication().getHomePage());
+			}
+		}.add(new Label("text", new ResourceModel("data.auth.status.home", "Home"))));
 
 		wrapper.add(new Link("signOut") {
 			@Override
